@@ -28,6 +28,9 @@ WaitForvBlank:
 	ld a, LCDCF_ON | LCDCF_BGON ; bitwise OR of LCD on and LCD background on flags
 	ld [rLCDC], a		    ; load that into the LCD control register to turn it on
 
+	; initialise background
+	ld a, %11100100		; select gray shades to colour numbers of background and window tiles. light gray for colour number 1, dark gray for colour number 2, black for colour number 3
+	ld [rBGP], a
 
 End:
 	jp End
