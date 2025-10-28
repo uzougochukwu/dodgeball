@@ -39,6 +39,19 @@ CopyTiles:
 		
 
 
+	; copy the tilemap data
+	ld de, Tilemap 		; load the memory start address of the Tilemap data
+	ld hl, $9800
+	ld bc, TilemapEnd - Tilemap ; amount of memory needed
+CopyTilemap:
+	ld a, [de]
+	ld [hli], a              ; load data from start of Tilemap memory into address hex 9800 plus index i
+	inc de
+	dec bc
+	ld a, b                ; upper 8 bits of amount of memory value, is now in accumulator
+	or a, c			; bitwise or of accumulator with lower 8 bits of amount of memory value, this combines the upper and lower 8 bits of the memory value, into the single 8 bit accumulator
+	jp nz, CopyTilemap
+	
 
 
 
