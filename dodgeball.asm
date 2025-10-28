@@ -131,9 +131,9 @@ Tiles:
 	dw `00000000
 	dw `00000000
 ; ANCHOR: custom_logo
-	dw `22322232
-	dw `23232323
-	dw `33333333
+	dw `00000000
+	dw `00000000
+	dw `00000000
 	; Paste your logo here:
 
 TilesEnd:
