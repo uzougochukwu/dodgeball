@@ -3,9 +3,13 @@
 
 SECTION "Header", ROM0[$100]
 
-	jp EntryPoint		; jump to EntryPoint
+	jp EntryPoint	; jump to EntryPoint
 
 	ds $150 - @, 0		; Create space for the header
+
+	; initialise globals
+	ld a, 0
+	ld [FrameCounter], a
 	
 
 EntryPoint:
@@ -16,6 +20,7 @@ WaitForvBlank:
 	cp 144			; 44 - 153 is the vBlank period
 	jp c, WaitForvBlank	; cp automatically compares the accumulator value with 144, by subtracting 144 from a. if carry, it means that a - 144 was negative and set the carry bit, which means a was less than 144, so we go back to the start of the loop. if the carry bit is not set, then a is greater than or equal to 144, so we are in vBlank
 
+	
 	; turn off LCD screen
 	ld a, 0
 	ld [rLCDC], a		; load 0 into the LCD control register to turn it off
@@ -57,21 +62,7 @@ CopyTilemap:
 	ld b, 160		; OAM is 160 bytes, so we use b as the index
 	ld hl, _OAMRAM		; load the start address of OAM into hl
 
-ClearOam:
-	ld [hli], a
-	dec b
-	jp nz, ClearOam		; clear memory until index, b, is 0
 
-	; create player controlled character (one 8x16 sprite)
-
-	ld hl, _OAMRAM
-	ld a, 128 + 16 		; y coordinate is 128
-	ld [hli], a
-	ld a, 16 + 8		; x coordinate is 16
-	ld [hli], a
-	ld a, 0			; tile id 0
-	ld [hli], a
-	ld [hli], a
 	
 	; copy the player tile
 	ld de, PlayerCharacter
@@ -87,6 +78,23 @@ CopyPlayerCharacter:
 	jp nz, CopyPlayerCharacter
 
 
+ClearOam:
+	ld [hli], a
+	dec b
+	jp nz, ClearOam		; clear memory until index, b, is 0
+
+	; create player controlled character (one 8x16 sprite)
+
+	ld hl, _OAMRAM
+	ld a, 128 + 16 		; y coordinate is 128
+	ld [hli], a
+	ld a, 16 + 8		; x coordinate is 16
+	ld [hli], a
+	ld a, 0			; tile id 0
+	ld [hli], a
+	ld [hli], a
+
+
 	; turn on LCD screen, with objects enabled
 	ld a, LCDCF_ON | LCDCF_BGON | LCDCF_OBJON ; bitwise OR of LCD on, LCD background on and LCD object on flags to combine them into one 8 bit register
 	ld [rLCDC], a		    ; load that into the LCD control register to turn it on
@@ -98,12 +106,42 @@ CopyPlayerCharacter:
 	ld a, %11100100		; select the gray shades to colour numbers of sprites. light gray for colour number 1, dark gray for colour number 2, black for colour number 3
 	ld [rOBP0], a
 
+	; initialise globals
+	ld a, 0
+	ld [FrameCounter], a
+
+Main:
+	ld a, [rLY]
+	cp 144
+	jp nc, Main
+
+WaitForvBlank2:
+	ld a, [rLY]
+	cp 144
+	jp c, WaitForvBlank2
+
+	ld a, [FrameCounter]
+	inc a
+	ld [FrameCounter], a
+	cp a, 15		; every 15 frames, run the next code
+	jp nz, Main
+
+	; Reset the frame count back to 0
+	ld a, 0
+	ld [FrameCounter], a
+
+	; move the player-character one pixel to the right
+	ld a, [_OAMRAM + 1]
+	inc a
+	ld [_OAMRAM + 1], a
+	jp Main
+
 End:
 	jp End
 
 PlayerCharacter:
     dw `13333331
-    dw `30000003
+    dw `30033003
     dw `13333331
     dw `00000000
     dw `00000000
@@ -404,3 +442,6 @@ Tilemap:
 	db $04, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $07, $03, $16, $17, $18, $19, $03, 0,0,0,0,0,0,0,0,0,0,0,0
 	db $04, $09, $09, $09, $09, $09, $09, $09, $09, $09, $09, $09, $09, $07, $03, $03, $03, $03, $03, $03, 0,0,0,0,0,0,0,0,0,0,0,0
 TilemapEnd:
+
+SECTION "Count", WRAM0
+FrameCounter: db		; count how many frames have elapsed since moving the player-character
