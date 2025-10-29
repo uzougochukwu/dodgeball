@@ -2,6 +2,9 @@
 
 SECTION "OAM Variables", WRAM0[$C100]
 player_character: DS 4*1
+SECTION "Shadow OAM", WRAM0, ALIGN[8]
+wShadowOAM:
+	ds 4*1
 SECTION "OAM DMA routine", ROM0
 CopyDMARoutine:
 	ld hl, DMARoutine
@@ -119,6 +122,12 @@ ClearOam:
 	; initialise background
 	ld a, %11100100		; select gray shades to colour numbers of background and window tiles. light gray for colour number 1, dark gray for colour number 2, black for colour number 3
 	ld [rBGP], a
+
+	; call the DMA subroutine
+	ld a, HIGH(wShadowOAM)
+	call hOAMDMA
+	jr WaitForvBlank
+	
 
 End:
 	jp End
