@@ -1,5 +1,7 @@
 	INCLUDE "hardware.inc"	; hardware constants
 
+SECTION "OAM Variables", WRAM0[$C100]
+player_character: DS 4*1
 SECTION "Header", ROM0[$100]
 
 	jp EntryPoint		; jump to EntryPoint
@@ -39,6 +41,7 @@ CopyTiles:
 	ld de, Tilemap 		; load the memory start address of the Tilemap data
 	ld hl, $9800
 	ld bc, TilemapEnd - Tilemap ; amount of memory needed
+
 CopyTilemap:
 	ld a, [de]
 	ld [hli], a              ; load data from start of Tilemap memory into address hex 9800 plus index i
@@ -60,7 +63,15 @@ ClearOam:
 	dec b
 	jp nz, ClearOam		; clear memory until index, b, is 0
 
-	
+	; create player controlled character (one 8x16 sprite)
+
+	; first byte is the Y position of the character
+	ld a, 16
+	ld [player_character], a
+
+	; second byte is the X position of the character
+	ld a, 32
+	ld [player_character+1], a
 
 
 	; turn on LCD screen
