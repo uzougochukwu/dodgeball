@@ -73,7 +73,18 @@ ClearOam:
 	ld [hli], a
 	ld [hli], a
 	
-
+	; copy the player tile
+	ld de, PlayerCharacter
+	ld hl, $8000
+	ld bc, PlayerCharacterEnd - PlayerCharacter
+CopyPlayerCharacter:
+	ld a, [de]
+	ld [hli], a
+	inc de
+	dec bc
+	ld a, b
+	or a, c
+	jp nz, CopyPlayerCharacter
 
 
 	; turn on LCD screen
@@ -86,6 +97,17 @@ ClearOam:
 
 End:
 	jp End
+
+PlayerCharacter:
+    dw `13333331
+    dw `30000003
+    dw `13333331
+    dw `00000000
+    dw `00000000
+    dw `00000000
+    dw `00000000
+    dw `00000000
+PlayerCharacterEnd:
 
 Tiles:
 
@@ -355,6 +377,8 @@ Tiles:
 
 
 TilesEnd:
+
+
 ; ANCHOR_END: custom_logo
 
 Tilemap:
