@@ -49,15 +49,22 @@ CopyTilemap:
 	jp nz, CopyTilemap
 	
 
+	; clearing object attribute memory (OAM)
 
+	ld a, 0			; we want to put 0 in every location in OAM
+	ld b, 160		; OAM is 160 bytes, so we use b as the index
+	ld hl, _OAMRAM		; load the start address of OAM into hl
 
-
+ClearOam:
+	ld [hli], a
+	dec b
+	jp nz, ClearOam		; clear memory until index, b, is 0
 
 	
 
 
 	; turn on LCD screen
-	ld a, LCDCF_ON | LCDCF_BGON ; bitwise OR of LCD on and LCD background on flags
+	ld a, LCDCF_ON | LCDCF_BGON ; bitwise OR of LCD on and LCD background on flags to combine them into one 8 bit register
 	ld [rLCDC], a		    ; load that into the LCD control register to turn it on
 
 	; initialise background
