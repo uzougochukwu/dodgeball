@@ -2,6 +2,32 @@
 
 SECTION "OAM Variables", WRAM0[$C100]
 player_character: DS 4*1
+SECTION "OAM DMA routine", ROM0
+CopyDMARoutine:
+	ld hl, DMARoutine
+	ld b, DMARoutineEnd - DMARoutine ; no. of bytes to copy
+	ld c, LOW(hOAMDMA)		 ; low byte of dest. address
+.copy
+	ld a, [hli]
+	ldh [c], a
+	inc c
+	dec b
+	jr nz, .copy
+	ret
+
+DMARoutine:
+	ldh [rDMA], a
+
+	ld a, 40
+.wait
+	dec a
+	jr nz, .wait
+	ret
+DMARoutineEnd:
+
+SECTION "OAM DMA", HRAM
+hOAMDMA::
+	ds DMARoutineEnd - DMARoutine ; reserve space to copy the routine to
 SECTION "Header", ROM0[$100]
 
 	jp EntryPoint		; jump to EntryPoint
@@ -72,6 +98,18 @@ ClearOam:
 	; second byte is the X position of the character
 	ld a, 32
 	ld [player_character+1], a
+
+	; use direct memory access to transfer character data from RAM to OAM
+	; load $C1 into the DMA register at $FF46
+	ld a, $C1
+	ld [rDMA], a 		; rDMA is FF46
+
+	; DMA transfer starts, the loop takes 160 microseconds
+	ld a, 40
+.loop:
+	dec a
+	jr nz, .loop
+	ret
 
 
 	; turn on LCD screen
