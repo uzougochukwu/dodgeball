@@ -1,36 +1,6 @@
 	INCLUDE "hardware.inc"	; hardware constants
 
-SECTION "OAM Variables", WRAM0[$C100]
-player_character: DS 4*1
-SECTION "Shadow OAM", WRAM0, ALIGN[8]
-wShadowOAM:
-	ds 4*1
-SECTION "OAM DMA routine", ROM0
-CopyDMARoutine:
-	ld hl, DMARoutine
-	ld b, DMARoutineEnd - DMARoutine ; no. of bytes to copy
-	ld c, LOW(hOAMDMA)		 ; low byte of dest. address
-.copy
-	ld a, [hli]
-	ldh [c], a
-	inc c
-	dec b
-	jr nz, .copy
-	ret
 
-DMARoutine:
-	ldh [rDMA], a
-
-	ld a, 40
-.wait
-	dec a
-	jr nz, .wait
-	ret
-DMARoutineEnd:
-
-SECTION "OAM DMA", HRAM
-hOAMDMA::
-	ds DMARoutineEnd - DMARoutine ; reserve space to copy the routine to
 SECTION "Header", ROM0[$100]
 
 	jp EntryPoint		; jump to EntryPoint
@@ -94,25 +64,16 @@ ClearOam:
 
 	; create player controlled character (one 8x16 sprite)
 
-	; first byte is the Y position of the character
-	ld a, 16
-	ld [player_character], a
+	ld hl, _OAMRAM
+	ld a, 128 + 16 		; y coordinate is 128
+	ld [hli], a
+	ld a, 16 + 8		; x coordinate is 16
+	ld [hli], a
+	ld a, 0			; tile id 0
+	ld [hli], a
+	ld [hli], a
+	
 
-	; second byte is the X position of the character
-	ld a, 32
-	ld [player_character+1], a
-
-	; use direct memory access to transfer character data from RAM to OAM
-	; load $C1 into the DMA register at $FF46
-	ld a, $C1
-	ld [rDMA], a 		; rDMA is FF46
-
-	; DMA transfer starts, the loop takes 160 microseconds
-	ld a, 40
-.loop:
-	dec a
-	jr nz, .loop
-	ret
 
 
 	; turn on LCD screen
@@ -122,12 +83,6 @@ ClearOam:
 	; initialise background
 	ld a, %11100100		; select gray shades to colour numbers of background and window tiles. light gray for colour number 1, dark gray for colour number 2, black for colour number 3
 	ld [rBGP], a
-
-	; call the DMA subroutine
-	ld a, HIGH(wShadowOAM)
-	call hOAMDMA
-	jr WaitForvBlank
-	
 
 End:
 	jp End
