@@ -87,13 +87,16 @@ CopyPlayerCharacter:
 	jp nz, CopyPlayerCharacter
 
 
-	; turn on LCD screen
-	ld a, LCDCF_ON | LCDCF_BGON ; bitwise OR of LCD on and LCD background on flags to combine them into one 8 bit register
+	; turn on LCD screen, with objects enabled
+	ld a, LCDCF_ON | LCDCF_BGON | LCDCF_OBJON ; bitwise OR of LCD on, LCD background on and LCD object on flags to combine them into one 8 bit register
 	ld [rLCDC], a		    ; load that into the LCD control register to turn it on
 
 	; initialise background
 	ld a, %11100100		; select gray shades to colour numbers of background and window tiles. light gray for colour number 1, dark gray for colour number 2, black for colour number 3
 	ld [rBGP], a
+	; initialise the first pallette
+	ld a, %11100100		; select the gray shades to colour numbers of sprites. light gray for colour number 1, dark gray for colour number 2, black for colour number 3
+	ld [rOBP0], a
 
 End:
 	jp End
