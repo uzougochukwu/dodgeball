@@ -312,12 +312,19 @@ MoveBallFromPlayer:
 	ld a, [_OAMRAM + 4]
 	dec a
 	ld [_OAMRAM + 4], a
+	
+
+	ret
 
 NotThrown:	
 	
 	ret
 
 HitWall:
+	; if ball has hit wall, we don't move it up
+	; and we set the PlayerBallThrown flag to 0
+	ld a, 0
+	ld [PlayerBallThrown], a
 
 	ret
 
