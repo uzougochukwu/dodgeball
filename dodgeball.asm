@@ -154,7 +154,19 @@ Up:
 	jp Main
 	
 CheckDown:
+	ld a, [CurKeys]
+	and a, PADF_DOWN
+	jp z, Main
+
+	; move the object down
+	ld a, [_OAMRAM]
+	inc a
+	; check if we are at bottom
+	cp a, 200
+	jp z, Main
+	ld [_OAMRAM], a
 	jp Main
+	
 	
 
 UpdateKeys:
