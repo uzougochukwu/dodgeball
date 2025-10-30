@@ -202,6 +202,14 @@ CheckDown:
 	jp z, Main
 	ld [_OAMRAM], a
 	jp Main
+
+CheckCatch:
+	ld a, [CurKeys]
+	and a, PADF_B		; PADF_B maps to A on a keyboard
+	jp z, Main
+	ld a, 1
+	ld [BallCaught], a	; set BallCaught flag to 1
+	jp Main
 	
 	
 
