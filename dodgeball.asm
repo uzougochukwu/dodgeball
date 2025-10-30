@@ -113,7 +113,7 @@ Left:
 	dec a			; decrement a because moving left means a decrease in x coord
 
 	; if already reached the wall, then stop
-	cp a, 15		; left wall edge has x coord of 15, if x coord is 0, then we reached the left wall
+	cp a, 7		; left wall edge has x coord of 15, if x coord is 0, then we reached the left wall
 	jp z, Main
 	ld [_OAMRAM + 1], a	; if we haven't reached the wall, then we know that the x coord in OAM needs to be updated
 	jp Main
@@ -131,7 +131,7 @@ Right:
 	inc a			; moving to right is increase in x coord
 
 	; check we have't reached right wall
-	cp a, 50
+	cp a, 113
 	jp z, Main
 	ld [_OAMRAM + 1], a
 	jp Main
