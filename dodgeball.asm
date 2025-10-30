@@ -99,21 +99,45 @@ WaitForvBlank2:
 	cp 144
 	jp c, WaitForvBlank2
 
-	ld a, [FrameCounter]
-	inc a
-	ld [FrameCounter], a
-	cp a, 15		; every 15 frames, run the next code
-	jp nz, Main
+	; check the keys each frame and move left or right
+	call UpdateKeys
 
-	; Reset the frame count back to 0
-	ld a, 0
-	ld [FrameCounter], a
+	; check if left button is pressed
+CheckLeft:
+	ld a, [CurKeys]
+	and a, PADF_LEFT	; accumulator bits only set if they are set in PADF_LEFT, which is a constant defined in hardware.inc as $20
+	jp z, CheckRight	; if the zero flag is set, then it means that value in a shows left key not set, so now check the right key
+Left:
+	; move the paddle one pixel to the left
+	ld a, [_OAMRAM + 1]	; we add one to the _OAMRAM address because the first byte is the Y position and the second byte is the X position, we want x
+	dec a			; decrement a because moving left means a decrease in x coord
 
-	; move the player-character one pixel to the right
+	; if already reached the wall, then stop
+	cp a, 15		; left wall edge has x coord of 15, if x coord is 0, then we reached the left wall
+	jp z, Main
+	ld [_OAMRAM + 1], a	; if we haven't reached the wall, then we know that the x coord in OAM needs to be updated
+	jp Main
+
+	; check right button
+
+CheckRight:
+	ld a, [CurKeys]
+	and a, PADF_RIGHT
+	jp z, Main			; if zero, go back to main
+	; else, move the object to the right
+
+Right:
 	ld a, [_OAMRAM + 1]
-	inc a
+	inc a			; moving to right is increase in x coord
+
+	; check we have't reached right wall
+	cp a, 50
+	jp z, Main
 	ld [_OAMRAM + 1], a
-	jp Main 
+	jp Main
+	
+	
+	
 
 UpdateKeys:
 	; Poll half the controller
