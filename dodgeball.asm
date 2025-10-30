@@ -300,6 +300,9 @@ UpdateKeys:
 	ret
 
 MoveBallFromPlayer:
+	ld a, [_OAMRAM + 4]
+	dec a
+	ld [_OAMRAM + 4], a
 	ret
 
 	; create a function BallThrownMovement that moves ball depending on who threw it and whether the ball has hit a wall yet, or player
