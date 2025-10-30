@@ -10,6 +10,8 @@ SECTION "Header", ROM0[$100]
 	; initialise globals
 	ld a, 0
 	ld [FrameCounter], a
+	ld [CurKeys], a
+	ld [NewKeys], a
 	
 
 EntryPoint:
@@ -111,12 +113,50 @@ WaitForvBlank2:
 	ld a, [_OAMRAM + 1]
 	inc a
 	ld [_OAMRAM + 1], a
-	jp Main
+	jp Main 
+
+UpdateKeys:
+	; Poll half the controller
+	ld a, P1F_GET_BTN
+	call .onenibble
+	ld b, a 			; B7-4 = 1 B3 - 0 = unpressed buttons
+
+	; poll the other half
+	ld a, P1F_GET_DPAD
+	call .onenibble
+	swap a			; A7-4 = unpressed directions A3-0 = 1
+	xor a, b		; A = pressed buttons + directions
+	ld b, a			; B = pressed buttons + directions
+
+	; now release the controller
+	ld a, P1F_GET_NONE
+	ldh [rP1], a
+
+	; Combine with previous CurKeys to make NewKeys
+	ld a, [CurKeys]
+	xor a, b		; A = keys that changed state
+	and a, b		; A = keys that changed to pressed
+	ld [NewKeys], a
+	ld a, b
+	ld [CurKeys], a
+	ret
+
+.onenibble
+	ldh [rP1], a		; switch the key matrix, P1 is defined in hardware.inc and means $FF00,this memory address is actually a register and is used to read joypad input
+	call .knownret		; expend 10 cycles calling a known return
+	ldh a, [rP1]		; ignore value while waiting for the key matrix to settle
+	ldh a, [rP1]		; it is ldh rather than ld as ld is only for loading to and from the hl register
+	ldh a, [rP1]   ; to handle debouncing, this is the only read we use
+	or a, $F0      ; A7-4 = 1 A3-0 = unpressed keys
+.knownret
+	ret
+
+
 
 	; copy data from one memory location to another
-	; @param de: Source
-	; @param hl: Destination
-	; @param bc: Length
+	; de: Source
+	; hl: Destination
+	; bc: Length
 Memcpy:
 	ld a, [de]
 	ld [hli], a 		; hli means that after access, hl is incremented
@@ -437,3 +477,7 @@ TilemapEnd:
 
 SECTION "Count", WRAM0
 FrameCounter: db		; count how many frames have elapsed since moving the player-character
+
+SECTION "Input Variables", WRAM0
+CurKeys: db
+NewKeys: db
