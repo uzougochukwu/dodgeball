@@ -238,6 +238,17 @@ ActualCheckCatch:
 	jp Main
 	
 CheckThrow:
+	ld a, [CurKeys]
+	and a, PADF_A		; PADF_A maps to S on a keyboard
+	jp z, Main		; if it wasn't pressed then go to Main
+	; else ball was thrown
+	ld a, 0			
+	ld [BallCaught], a
+	ld a, 1
+	ld [PlayerBallThrown], a ; set PlayerBallThrown flag to 1
+	ld a, 0
+	ld [OpponentBallThrown], a ; set OpponentBallThrown flag to 0	
+	call BallThrownMovement
 	jp Main
 
 UpdateKeys:
@@ -294,7 +305,7 @@ BallThrownMovement:
 	jp MoveBallUp			    ; if ball did not hit wall, then jmp to MoveBallUp
 SwitchOffPlayerBallThrownFlag:
 	ld a, 0
-	jp Main
+	ret
 	
 MoveBallUp:
 	; else decrement y coord of ball to move ball upwards
