@@ -125,6 +125,7 @@ WaitForvBlank2:
 	call UpdateKeys
 
 	; create a function BallThrownMovement that moves ball depending on who threw it and whether the ball has hit a wall yet, or player - this function should only run after the player presses the throw button
+	call BallThrownMovement
 
 	; if ball has been caught by the player, run the ball-caught update routine
 	ld a, [BallCaught]
@@ -238,6 +239,7 @@ ActualCheckCatch:
 	jp Main
 	
 CheckThrow:
+	jp Main
 	ld a, [CurKeys]
 	and a, PADF_A		; PADF_A maps to S on a keyboard
 	jp z, Main		; if it wasn't pressed then go to Main
@@ -248,7 +250,7 @@ CheckThrow:
 	ld [PlayerBallThrown], a ; set PlayerBallThrown flag to 1
 	ld a, 0
 	ld [OpponentBallThrown], a ; set OpponentBallThrown flag to 0	
-	call BallThrownMovement
+;	call BallThrownMovement try simply setting the flags and calling the BallThrownMovement routine from main
 	jp Main
 
 UpdateKeys:
