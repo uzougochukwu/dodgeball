@@ -105,7 +105,7 @@ WaitForvBlank2:
 	; check if left button is pressed
 CheckLeft:
 	ld a, [CurKeys]
-	and a, PADF_A	; accumulator bits only set if they are set in PADF_LEFT, which is a constant defined in hardware.inc as $20
+	and a, PADF_B	; accumulator bits only set if they are set in PADF_LEFT, which is a constant defined in hardware.inc as $20
 	jp z, CheckRight	; if the zero flag is set, then it means that value in a shows left key not set, so now check the right key
 Left:
 	; move the paddle one pixel to the left
