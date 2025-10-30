@@ -125,7 +125,13 @@ WaitForvBlank2:
 	call UpdateKeys
 
 	; create a function BallThrownMovement that moves ball depending on who threw it and whether the ball has hit a wall yet, or player - this function should only run after the player presses the throw button
-	call BallThrownMovement
+	; if ball was thrown call BallThrownMovement, else don't
+	ld a, [PlayerBallThrown]
+	and a, 1
+	jp nz, PlayerNotThrow
+;	call BallThrownMovement
+
+PlayerNotThrow:
 
 	; if ball has been caught by the player, run the ball-caught update routine
 	ld a, [BallCaught]
@@ -225,6 +231,8 @@ CheckCatch:
 	jp c, ActualCheckCatch
 	jp Main			; but if c not set, c greater than or equal to 10, so we want to exit the CheckCatch and go back to main
 
+;; TODO: CHECK X COORD OF BALL AND PLAYER
+
 ActualCheckCatch:
 	
 	ld a, [CurKeys]
@@ -239,11 +247,6 @@ ActualCheckCatch:
 	jp Main
 	
 CheckThrow:
-	;must check if BallCaught flag is set
-	ld a, [BallCaught]
-	cp a, 1
-	jp nz, Main		; if flag not set, no point checking for throw
-
 	ld a, [CurKeys]
 	and a, PADF_A		; PADF_A maps to S on a keyboard
 	jp z, Main		; if it wasn't pressed then go to Main
@@ -254,7 +257,7 @@ CheckThrow:
 	ld [PlayerBallThrown], a ; set PlayerBallThrown flag to 1
 	ld a, 0
 	ld [OpponentBallThrown], a ; set OpponentBallThrown flag to 0	
-;	call BallThrownMovement try simply setting the flags and calling the BallThrownMovement routine from main
+;	call BallThrownMovement
 	jp Main
 
 UpdateKeys:
@@ -303,21 +306,26 @@ BallThrownMovement:
 	cp a, 1
 	jp nz, OpponentThrown	; if zero flag not set, a does not equal 1, so we must check if Opponent threw ball
 	; else move ball towards the wall opposite the player
-
+	; switch off playerballthrown flag
+	call SwitchOffPlayerBallThrownFlag
+	
 	; check to see if ball has reached wall yet
 	ld a, [_OAMRAM+4]	; y coord of ball in a
 	cp a, 15		; if a is less than or equal to 15, go back to main
-	jp c, SwitchOffPlayerBallThrownFlag ; ball hit the wall, so switch off the PlayerBallThrown flag
+	jp c, Main ; ball hit the wall
 	jp MoveBallUp			    ; if ball did not hit wall, then jmp to MoveBallUp
 SwitchOffPlayerBallThrownFlag:
 	ld a, 0
+	ld [PlayerBallThrown], a
+	; ret this ret might have caused an overflow of some sort
+	;	jp Main
 	ret
 	
 MoveBallUp:
 	; else decrement y coord of ball to move ball upwards
 	dec a
 	ld [_OAMRAM+4], a	; y coord of ball changed to move towards top wall
-	
+	ret			; added recently
 	
 
 OpponentThrown:
