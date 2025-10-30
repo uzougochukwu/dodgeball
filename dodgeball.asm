@@ -207,7 +207,7 @@ Up:
 CheckDown:
 	ld a, [CurKeys]
 	and a, PADF_DOWN
-	jp z, CheckCatch
+	jp z, CheckCatchY
 
 	; move the object down
 	ld a, [_OAMRAM]
@@ -218,7 +218,7 @@ CheckDown:
 	ld [_OAMRAM], a
 	jp Main
 
-CheckCatch:
+CheckCatchY:
 
 	; load a with player position and b with ball position
 	; assume player is lower down on screen than ball
@@ -230,10 +230,18 @@ CheckCatch:
 	cp a, 10
 	; if a is less than 10, the c flag is set
 	; if c flag set, we want to continue with the check
-	jp c, ActualCheckCatch
-	jp Main			; but if c not set, c greater than or equal to 10, so we want to exit the CheckCatch and go back to main
+	jp c, CheckCatchX
+	jp Main			; but if c not set, c greater than or equal to 10, so we want to exit the CheckCatch and go back to main 
+	; maybe jp Throw is better, this is not the same as the left, right, up down checks
+	
 
-;; TODO: CHECK X COORD OF BALL AND PLAYER
+CheckCatchX:
+	ld a, [_OAMRAM + 5]	; x coord of ball in a
+	ld b, a			; x coord of ball in b
+	ld a, [_OAMRAM + 1]	; x coord of player in a
+	cp a, b			; will have to check for a = b, otherwise we run into negatives
+	jp nz, Main		; if the x coords dont line up, can't catch, back to Main - maybe change to CheckThrow
+	
 
 ActualCheckCatch:
 	
