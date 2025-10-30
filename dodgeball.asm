@@ -148,7 +148,7 @@ Up:
 	dec a			; decreasing a moves the object up
 
 	; check if we are at the top
-	cp a, 4
+	cp a, 15
 	jp z, Main		; if we are then stop
 	ld [_OAMRAM], a		; if not, load in the new y coordinate
 	jp Main
@@ -162,7 +162,7 @@ CheckDown:
 	ld a, [_OAMRAM]
 	inc a
 	; check if we are at bottom
-	cp a, 200
+	cp a, 158
 	jp z, Main
 	ld [_OAMRAM], a
 	jp Main
