@@ -132,7 +132,8 @@ WaitForvBlank2:
 CaughtBallMove:	
 	; ball caught, find out the position of the player and keep the ball close to that position
 	ld a, [_OAMRAM]		; y pos of player
-	ld [_OAMRAM + 4], a	; y pos of ball becomes y pos of player
+	sub a, 5		; move ball slightly above player
+	ld [_OAMRAM + 4], a	; y pos of ball becomes y pos of player, minus gap
 
 	ld a, [_OAMRAM + 1]	; x pos of player
 	ld [_OAMRAM + 5], a	; x pos of ball becomes x pos of player
@@ -206,6 +207,9 @@ CheckDown:
 	jp Main
 
 CheckCatch:
+
+	; now check the distance, if the player and the ball are not close enough, jump back to Main
+	
 	ld a, [CurKeys]
 	and a, PADF_B		; PADF_B maps to A on a keyboard
 	jp z, Main
