@@ -231,7 +231,7 @@ CheckCatchY:
 	; if a is less than 10, the c flag is set
 	; if c flag set, we want to continue with the check
 	jp c, CheckCatchX
-	jp Main			; but if c not set, c greater than or equal to 10, so we want to exit the CheckCatch and go back to main 
+	jp CheckThrow		; but if c not set, c greater than or equal to 10, so we want to exit the CheckCatch and go back to main 
 	; maybe jp Throw is better, this is not the same as the left, right, up down checks
 	
 
@@ -240,7 +240,7 @@ CheckCatchX:
 	ld b, a			; x coord of ball in b
 	ld a, [_OAMRAM + 1]	; x coord of player in a
 	cp a, b			; will have to check for a = b, otherwise we run into negatives
-	jp nz, Main		; if the x coords dont line up, can't catch, back to Main - maybe change to CheckThrow
+	jp nz, CheckThrow		; if the x coords dont line up, can't catch, back to Main - maybe change to CheckThrow
 	
 
 ActualCheckCatch:
@@ -254,7 +254,7 @@ ActualCheckCatch:
 	ld [PlayerBallThrown], a ; set PlayerBallThrown flag to 0
 	ld a, 0
 	ld [OpponentBallThrown], a ; set OpponentBallThrown flag to 0
-	jp Main
+	;jp Main
 	
 CheckThrow:
 	ld a, [CurKeys]
