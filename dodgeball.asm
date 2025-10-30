@@ -136,6 +136,21 @@ WaitForvBlank2:
 	ld [_OAMRAM + 1], a
 	jp Main
 
+	; copy data from one memory location to another
+	; @param de: Source
+	; @param hl: Destination
+	; @param bc: Length
+Memcpy:
+	ld a, [de]
+	ld [hli], a 		; hli means that after access, hl is incremented
+	inc de
+	dec bc
+	ld a, b
+	or a, c
+	jp nz, Memcpy
+	ret
+	
+
 End:
 	jp End
 
