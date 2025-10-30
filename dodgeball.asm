@@ -12,6 +12,8 @@ SECTION "Header", ROM0[$100]
 	ld [FrameCounter], a
 	ld [CurKeys], a
 	ld [NewKeys], a
+	ld [BallCaught], a
+	
 	
 
 EntryPoint:
@@ -119,6 +121,21 @@ WaitForvBlank2:
 
 	; check the keys each frame and move left or right
 	call UpdateKeys
+
+	; if ball has been caught by the player, run the ball-caught update routine
+
+	ld a, [BallCaught]
+	jp z, CheckLeft		; if ball hasn't been caught, go to CheckLeft
+
+	; ball caught, find out the position of the player and keep the ball close to that position
+	ld a, [_OAMRAM]		; y pos of player
+	ld [_OAMRAM + 4], a	; y pos of ball becomes y pos of player
+
+	ld a, [_OAMRAM + 1]	; x pos of player
+	ld [_OAMRAM + 5], a	; x pos of ball becomes x pos of player
+
+	
+	; if ball hasn't been caught, then the movement is handled by the direction it was thrown, and the frame counter, which determines whether it is in motion or stopped
 
 	; check if left button is pressed
 CheckLeft:
@@ -564,3 +581,4 @@ FrameCounter: db		; count how many frames have elapsed since moving the player-c
 SECTION "Input Variables", WRAM0
 CurKeys: db
 NewKeys: db
+BallCaught: db
