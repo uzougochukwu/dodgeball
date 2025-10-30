@@ -13,6 +13,8 @@ SECTION "Header", ROM0[$100]
 	ld [CurKeys], a
 	ld [NewKeys], a
 	ld [BallCaught], a
+	ld [PlayerBallThrown], a
+	ld [OpponentBallThrown], a
 	
 	
 
@@ -122,8 +124,9 @@ WaitForvBlank2:
 	; check the keys each frame and move left or right
 	call UpdateKeys
 
-	; if ball has been caught by the player, run the ball-caught update routine
+	; create a function BallThrownMovement that moves ball depending on who threw it and whether the ball has hit a wall yet, or player - this function should only run after the player presses the throw button
 
+	; if ball has been caught by the player, run the ball-caught update routine
 	ld a, [BallCaught]
 	cp a, 1
 	jp z, CaughtBallMove	; if ball hasn't been caught, go to CheckLeft
@@ -225,12 +228,17 @@ ActualCheckCatch:
 	
 	ld a, [CurKeys]
 	and a, PADF_B		; PADF_B maps to A on a keyboard
-	jp z, Main
+	jp z, CheckThrow
 	ld a, 1
 	ld [BallCaught], a	; set BallCaught flag to 1
+	ld a, 0
+	ld [PlayerBallThrown], a ; set PlayerBallThrown flag to 0
+	ld a, 0
+	ld [OpponentBallThrown], a ; set OpponentBallThrown flag to 0
 	jp Main
 	
-	
+CheckThrow:
+	jp Main
 
 UpdateKeys:
 	; Poll half the controller
@@ -268,8 +276,36 @@ UpdateKeys:
 .knownret
 	ret
 
+	; create a function BallThrownMovement that moves ball depending on who threw it and whether the ball has hit a wall yet, or player
 
+	; splits into player thrown and opponent thrown
 
+BallThrownMovement:
+	; check flags to see who, if anyone, threw the ball
+	ld a, [PlayerBallThrown]
+	cp a, 1
+	jp nz, OpponentThrown	; if zero flag not set, a does not equal 1, so we must check if Opponent threw ball
+	; else move ball towards the wall opposite the player
+
+	; check to see if ball has reached wall yet
+	ld a, [_OAMRAM+4]	; y coord of ball in a
+	cp a, 15		; if a is less than or equal to 15, go back to main
+	jp c, SwitchOffPlayerBallThrownFlag ; ball hit the wall, so switch off the PlayerBallThrown flag
+	jp MoveBallUp			    ; if ball did not hit wall, then jmp to MoveBallUp
+SwitchOffPlayerBallThrownFlag:
+	ld a, 0
+	jp Main
+	
+MoveBallUp:
+	; else decrement y coord of ball to move ball upwards
+	dec a
+	ld [_OAMRAM+4], a	; y coord of ball changed to move towards top wall
+	
+	
+
+OpponentThrown:
+	jp Main
+	
 	; copy data from one memory location to another
 	; de: Source
 	; hl: Destination
@@ -610,3 +646,5 @@ SECTION "Input Variables", WRAM0
 CurKeys: db
 NewKeys: db
 BallCaught: db
+PlayerBallThrown: db
+OpponentBallThrown: db
