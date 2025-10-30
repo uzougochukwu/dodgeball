@@ -194,7 +194,7 @@ Up:
 CheckDown:
 	ld a, [CurKeys]
 	and a, PADF_DOWN
-	jp z, Main
+	jp z, CheckCatch
 
 	; move the object down
 	ld a, [_OAMRAM]
