@@ -67,7 +67,7 @@ ClearOam:
 	ld hl, _OAMRAM
 	ld a, 128 + 16 		; y coordinate is 128
 	ld [hli], a
-	ld a, 16 + 8		; x coordinate is 16
+	ld a, 53 + 8		; x coordinate is 53
 	ld [hli], a
 	ld a, 0			; tile id 0
 	ld [hli], a
@@ -123,7 +123,7 @@ Left:
 CheckRight:
 	ld a, [CurKeys]
 	and a, PADF_RIGHT
-	jp z, Main			; if zero, go back to main
+	jp z, CheckUp			; if zero, go to CheckUp
 	; else, move the object to the right
 
 Right:
@@ -135,8 +135,26 @@ Right:
 	jp z, Main
 	ld [_OAMRAM + 1], a
 	jp Main
+
+	; check up button
+CheckUp:
+	ld a, [CurKeys]
+	and a, PADF_UP
+	jp z, CheckDown		; if zero go to CheckDown
+	; else, move the object up
+
+Up:
+	ld a, [_OAMRAM]		; the y coordinate is the first piece of info in OAM, so we don't need to add any bytes
+	dec a			; decreasing a moves the object up
+
+	; check if we are at the top
+	cp a, 4
+	jp z, Main		; if we are then stop
+	ld [_OAMRAM], a		; if not, load in the new y coordinate
+	jp Main
 	
-	
+CheckDown:
+	jp Main
 	
 
 UpdateKeys:
