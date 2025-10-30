@@ -303,6 +303,11 @@ MoveBallFromPlayer:
 	ld a, [PlayerBallThrown]
 	cp a, 1
 	jp nz, NotThrown
+
+	; now add check to see if it has hit wall, if it has jp to HitWall
+	ld a, [_OAMRAM + 4]
+	cp a, 15
+	jp c, HitWall
 	
 	ld a, [_OAMRAM + 4]
 	dec a
@@ -310,6 +315,10 @@ MoveBallFromPlayer:
 
 NotThrown:	
 	
+	ret
+
+HitWall:
+
 	ret
 
 	; create a function BallThrownMovement that moves ball depending on who threw it and whether the ball has hit a wall yet, or player
