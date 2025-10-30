@@ -239,7 +239,11 @@ ActualCheckCatch:
 	jp Main
 	
 CheckThrow:
-	jp Main
+	;must check if BallCaught flag is set
+	ld a, [BallCaught]
+	cp a, 1
+	jp nz, Main		; if flag not set, no point checking for throw
+
 	ld a, [CurKeys]
 	and a, PADF_A		; PADF_A maps to S on a keyboard
 	jp z, Main		; if it wasn't pressed then go to Main
