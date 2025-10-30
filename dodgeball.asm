@@ -208,27 +208,20 @@ CheckDown:
 
 CheckCatch:
 
-	; now check the distance, if the player and the ball are not close enough, jump back to Main
-
-	ld a, [_OAMRAM]		; y coord of the player in a
-	ld b, a			; y coord of the player in b
-	ld a, [_OAMRAM+4]	; y coord of ball in a
+	; load a with player position and b with ball position
+	; assume player is lower down on screen than ball
+	; make ball move through a slightly smaller playfield, to accomodate this
+	ld a, [_OAMRAM+4]		; y coord of ball in a
+	ld b, a			        ; y coord of ball in b
+	ld a, [_OAMRAM]			; y coord of player in a
 	sub a, b
-	cp a, 10		; if a (after doing a - b) is greater than 10, then the carry flag is not set because a is positive, so we exit CheckCatch and jmp to Main, as we are too far away
-	jp c, CheckYNeg
-	jp Main
+	cp a, 10
+	; if a is less than 10, the c flag is set
+	; if c flag set, we want to continue with the check
+	jp c, ActualCheckCatch
+	jp Main			; but if c not set, c greater than or equal to 10, so we want to exit the CheckCatch and go back to main
 
-CheckYNeg:	
-	ld a, [_OAMRAM]	; 
-	ld b, a			; 
-	ld a, [_OAMRAM+4]	        ; 
-	sub a, b
-	cp a, 246                ; if a (after doing a - b) is greater than 10, then the carry flag is not set because a is positive, so we exit CheckCatch and jmp to Main, as we are too far away
-	jp c, ActualCatchCheck	 ; might want to jmp to Main if c, switch these
-	jp Main
-	
-	
-ActualCatchCheck:
+ActualCheckCatch:
 	
 	ld a, [CurKeys]
 	and a, PADF_B		; PADF_B maps to A on a keyboard
