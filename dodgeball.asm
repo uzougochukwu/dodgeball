@@ -71,7 +71,7 @@ ClearOam:
 	ld [hli], a
 	ld a, 0			; tile id 0
 	ld [hli], a
-	ld [hli], a
+	ld [hli], a		; attribute is 0 so 8x8
 
 
 	; turn on LCD screen, with objects enabled
@@ -105,7 +105,7 @@ WaitForvBlank2:
 	; check if left button is pressed
 CheckLeft:
 	ld a, [CurKeys]
-	and a, PADF_LEFT	; accumulator bits only set if they are set in PADF_LEFT, which is a constant defined in hardware.inc as $20
+	and a, PADF_A	; accumulator bits only set if they are set in PADF_LEFT, which is a constant defined in hardware.inc as $20
 	jp z, CheckRight	; if the zero flag is set, then it means that value in a shows left key not set, so now check the right key
 Left:
 	; move the paddle one pixel to the left
@@ -162,7 +162,7 @@ CheckDown:
 	ld a, [_OAMRAM]
 	inc a
 	; check if we are at bottom
-	cp a, 158
+	cp a, 159
 	jp z, Main
 	ld [_OAMRAM], a
 	jp Main
