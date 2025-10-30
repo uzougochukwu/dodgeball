@@ -125,6 +125,7 @@ WaitForvBlank2:
 	; if ball has been caught by the player, run the ball-caught update routine
 
 	ld a, [BallCaught]
+	and a, 0
 	jp z, CheckLeft		; if ball hasn't been caught, go to CheckLeft
 
 	; ball caught, find out the position of the player and keep the ball close to that position
