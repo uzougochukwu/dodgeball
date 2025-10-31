@@ -487,9 +487,9 @@ BounceOffOpponent:
 	add a, 10		; we want the ball to move down screen after hitting opponent
 	ld [_OAMRAM + 4], a
 	; change x coord of ball too
-	ld a, [_OAMRAM + 5]	; x coord of ball is in a
-	add a, 3
-	ld [_OAMRAM + 5], a
+;	ld a, [_OAMRAM + 5]	; x coord of ball is in a
+;	add a, 3
+;	ld [_OAMRAM + 5], a
 	
 	ret
 
