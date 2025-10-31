@@ -102,7 +102,7 @@ ClearOam:
 
 	; create opponent (one 8x8 sprite)
 	ld hl, _OAMRAM + 8
-	ld a, 20 + 16		; y coord is 16
+	ld a, 5 + 16		; y coord is 16
 	ld [hli], a
 	ld a, 53 + 8		; x coord is 53
 	ld [hli], a
@@ -332,7 +332,23 @@ MoveBallFromPlayer:
 	ld a, [_OAMRAM + 4]
 	cp a, 15
 	jp c, HitWall
-	
+
+	; now check to see if it has hit the opponent, if it has jp to HitOpponent
+	ld a, [_OAMRAM+8]	; y coord of opponent in a
+	ld b, a			; y coord of opponent in b
+	ld a, [_OAMRAM+4]	; y coord of ball in a
+	; for ease of programming, test that they are equal only
+	cp a, b
+	jp nz, CanMove		; if the y coords of ball and opponent are not equal, go to CanMove
+
+	ld a, [_OAMRAM+9]	; x coord of opponent in a
+	ld b, a			; x coord of opponent in b
+	ld a, [_OAMRAM+5]	; x coord of ball in a
+	cp a, b
+	jp z, HitOpponent	; if zero flag is set, x coords are equal, so we jp to HitOpponent
+
+
+CanMove:	
 	ld a, [_OAMRAM + 4]
 	dec a
 	ld [_OAMRAM + 4], a
@@ -346,6 +362,14 @@ NotThrown:
 
 HitWall:
 	; if ball has hit wall, we don't move it up
+	; and we set the PlayerBallThrown flag to 0
+	ld a, 0
+	ld [PlayerBallThrown], a
+
+	ret
+
+HitOpponent:
+	; if the ball has hit the opponent, we don't move it up
 	; and we set the PlayerBallThrown flag to 0
 	ld a, 0
 	ld [PlayerBallThrown], a
