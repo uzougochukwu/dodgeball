@@ -193,6 +193,8 @@ WaitForvBlank2:
 
 	call MoveBallFromOpponent ; check for OppCaughtBall flag, then call a routine to send ball towards bottom wall
 
+	call BounceOffPlayer
+
 
 CheckBallCaughtByPlayer:
 	; if ball has been caught by the player, run the ball-caught update routine
@@ -368,10 +370,18 @@ UpdateKeys:
 	ret
 
 MoveBallFromOpponent:
-;	call BounceOffPlayer 	; added here for testing
+	;	call BounceOffPlayer 	; added here for testing
+	ld a, [BallHitPlayer]
+	cp a, 2
+	jp nz, NextBHP
+	ret
+	
+NextBHP:	
 	ld a, [BallHitPlayer]
 	cp a, 1
 	jp z, BounceOffPlayer
+	; bounce off player increases BHP to 2
+	; this function exits if BHP is 2
 
 	
 NextChecks:
@@ -401,13 +411,18 @@ ActualMoveBallFromOpponent:
 	jp z, HitLowerWall
 
 	
-	; now check to see if it has hit the player, if it has jp to HitOpponent
-;	ld a, [_OAMRAM]	; y coord of player in a
-;	ld b, a			; y coord of player in b
-;	ld a, [_OAMRAM+4]	; y coord of ball in a
-	; for ease of programming, test that they are equal only
-;	cp a, b
-;	jp nz, CanMoveBallFromOpponent		; if the y coords of ball and opponent are not equal, go to CanMoveBallFromOpponent
+	; now check to see if it has hit the player, if it has jp to HitOpponent, need to do loose check for y
+	; the sprites will never line up exactly
+	; put the y coord of the player in a and y coord of ball in b
+	; assume a always > b
+	; do a - b
+	; if a is less than or equal to 4, then record a hit
+	ld a, [_OAMRAM + 4]	; y coord of ball in a
+	ld b, a			; y coord of ball in b
+	ld a, [_OAMRAM]	; y coord of player in a
+	sub a, b
+	cp a, 10
+	jp nc, CanMoveBallFromOpponent		; if carry not set, a > b by 10 or more, so we haven't collided and can move on
 
 	ld a, [_OAMRAM+1]	; x coord of player in a
 	ld b, a			; x coord of player in b
@@ -431,13 +446,21 @@ HitLowerWall:
 HitPlayer:
 	; need ball to bounce off
 	;	call BounceOffPlayer maybe opponent
-	call BounceOffPlayer
+	ld a, 1
+	ld [BallHitPlayer], a
+;	call BounceOffPlayer
 	ret
 
 BounceOffPlayer:
-	ld a, 1
-	ld [BallHitPlayer], a	; so that next iteration of MoveBallFromOpponent, will not run due to this flag being set
+;	ld a, 1
+;	ld [BallHitPlayer], a	; so that next iteration of MoveBallFromOpponent, will not run due to this flag being set
+
+	ld a, [BallHitPlayer]
+	cp a, 1
+	jp z, NextBounce
+	ret
 	
+NextBounce:	
 	ld a, [_OAMRAM + 4]	; y coord of ball is in a
 	sub a, 10		; we want the ball to move down screen after hitting opponent
 	ld [_OAMRAM + 4], a
@@ -445,7 +468,8 @@ BounceOffPlayer:
 	ld a, [_OAMRAM + 5]	; x coord of ball is in a
 ;	sub a, 3; for testing purposes, have x stay the same
 	ld [_OAMRAM + 5], a
-	
+	ld a, 2
+	ld [BallHitPlayer], a	
 	ret
 	
 
