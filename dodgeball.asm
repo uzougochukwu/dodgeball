@@ -163,11 +163,17 @@ WaitForvBlank2:
 	;	jp nz, CheckBallCaughtByPlayer
 
 	; check how many times the opponent has moved towards ball so it is not too far
-	ld a, [OpponentStationaryCatchCounter]
-	cp a, 1
-	jp z, CheckBallCaughtByPlayer
+;	ld a, [OpponentStationaryCatchCounter]
+;	cp a, 1
+	;	jp z, CheckBallCaughtByPlayer
+
+	
 	
 	call OpponentMoveToCatchStationaryBall
+
+;	ld a, [OpponentStationaryCatchCounter]
+;	cp a, 10
+;		jp z, CheckBallCaughtByPlayer ; if the catch counter is 4, the opponent has moved enough, so we can turn off the move opponent towards stationar ball function by switching the ballhitopponent flag off
 
 	ld a, 0
 	ld [BallHitOpponent], a
@@ -437,9 +443,10 @@ DoMove:
 	ld a, [OpponentStationaryCatchCounter]
 	inc a
 	ld [OpponentStationaryCatchCounter], a ; need to load new value back in
-	
+	ld a, 1
+	ld [OpponentCaughtBall], a
 	ret
-NoMoreMove:
+NoMoreMove:		 ; this code is never run
 	; opponent has now caught the stationary ball
 	ld a, 1
 	ld [OpponentCaughtBall], a ; so when we call ball move with opponent, from main, it will actually keep the ball with the opponent
@@ -449,6 +456,9 @@ NoMoreMove:
 
 BallMoveWithOpponent:
 	; need code in main that checks the OpponentStationaryCatchCounter, and runs this code if it is 8
+	ld a, [OpponentCaughtBall]
+	cp a, 1
+	jp nz, LastOfBMWO
 	ld a, [_OAMRAM + 9] 	; x coord of opponent in a
 	ld [_OAMRAM + 5], a	; opponent and ball have same x coord
 	ld a, [_OAMRAM + 8]	; y coord of opponent in A
@@ -456,6 +466,7 @@ BallMoveWithOpponent:
 	ld [_OAMRAM + 4], a	; y coord of ball is 5 more than opponent
 	ld a, 0
 	ld [OpponentCaughtBall], a
+LastOfBMWO:
 	
 	ret
 	
