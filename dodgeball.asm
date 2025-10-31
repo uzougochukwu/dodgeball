@@ -508,12 +508,28 @@ ActualOpponentMove:
 DoMove:	
 	ld a, [_OAMRAM + 8]     ;y coord of opponent
 	inc a
-	ld [_OAMRAM + 8], a
+	ld [_OAMRAM + 8], a	; move opponent down
+
+	; check whether opponent has hit a wall, if so move opposite
+
+	; check right wall
+	ld a, [_OAMRAM + 9]
+	cp a, 113
+	jp z, MoveOpponentToLeft
+	inc a
+	ld [_OAMRAM + 9], a
+	
+	
 	ld a, [OpponentStationaryCatchCounter]
 	inc a
 	ld [OpponentStationaryCatchCounter], a ; need to load new value back in
 	ld a, 1
 	ld [OpponentCaughtBall], a
+	ret
+
+MoveOpponentToLeft:
+	dec a
+	ld [_OAMRAM + 9], a
 	ret
 NoMoreMove:		 ; this code is never run
 	; opponent has now caught the stationary ball
