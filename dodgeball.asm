@@ -317,15 +317,15 @@ ActualCheckCatch:
 	ld [OpponentBallThrown], a ; set OpponentBallThrown flag to 0
 	;jp Main
 	ld a, $16
-	ld [$FF10], a
+	ld [$FF10], a		; set sweep time to 1 (sweep time allows freq. to gradually increase or decrease), but 1 means it stays samee
 	ld a, $40
-	ld [$FF11], a
+	ld [$FF11], a		; set length of sound
 	ld a, $73
-	ld [$FF12], a
+	ld [$FF12], a		; volume and how volume changes
 	ld a, $0
-	ld [$FF13], a
+	ld [$FF13], a		; set frequency
 	ld a, $C3
-	ld [$FF14], a
+	ld [$FF14], a		; playback length for sound (not sure how this differs from usual length)
 	
 CheckThrow:
 	ld a, [CurKeys]
@@ -490,6 +490,17 @@ HitOpponent:
 	ld a, 1
 	ld [BallHitOpponent], a	; set flag for BallHitOpponent to 1, so that when we call the Opponent catch routine from main, the opponent will move to catch the ball
 	call BounceOffOpponent
+
+	ld a, $4
+	ld [$FF10], a		; set sweep time to 4 (sweep time allows freq. to gradually increase or decrease), but 1 means it stays samee
+	ld a, $4
+	ld [$FF11], a		; set length of sound
+	ld a, $A1
+	ld [$FF12], a		; volume and how volume changes
+	ld a, $5
+	ld [$FF13], a		; set frequency
+	ld a, $C3
+	ld [$FF14], a		; playback length for sound (not sure how this differs from usual length)
 
 	ret
 
