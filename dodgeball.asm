@@ -421,6 +421,17 @@ Ball:
     dw `00000000
 BallEnd:
 
+Opponent:
+    dw `33333333
+    dw `30000003
+    dw `33333333
+    dw `00000000
+    dw `00000000
+    dw `00000000
+    dw `00000000
+    dw `00000000
+OpponentEnd:
+
 Tiles:
 
 	dw `00000000
