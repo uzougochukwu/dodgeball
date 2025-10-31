@@ -27,6 +27,7 @@ SECTION "Header", ROM0[$100]
 	ld [MBFO], a
 	
 	
+	
 
 EntryPoint:
 
@@ -195,12 +196,12 @@ WaitForvBlank2:
 	; if MBFO is 1, skip MoveBallFromOpponent
 	
 	ld a, [MBFO]
-	cp a, 1
-	jp z, CheckBounce
+;	cp a, 1
+;	jp z, CheckBounce
 	call MoveBallFromOpponent ; check for OppCaughtBall flag, then call a routine to send ball towards bottom wall
 
 CheckBounce:	
-	call BounceOffPlayer
+;	call BounceOffPlayer
 
 
 CheckBallCaughtByPlayer:
@@ -378,38 +379,40 @@ UpdateKeys:
 
 MoveBallFromOpponent:
 	;	call BounceOffPlayer 	; added here for testing
-	ld a, [BallHitPlayer]
-	cp a, 2
-	jp nz, NextBHP
+;	ld a, [BallHitPlayer]
+	;	cp a, 2
+	ld a, [OpponentBallThrown] ; set this to one in the stationary catch part
+	cp a, 1
+	jp nz, OpponentNotThrown
 	ret
 	
 NextBHP:	
-	ld a, [BallHitPlayer]
-	cp a, 1
-	jp z, BounceOffPlayer
+;	ld a, [BallHitPlayer]
+;	cp a, 1
+;	jp z, BounceOffPlayer
 	; bounce off player increases BHP to 2
 	; this function exits if BHP is 2
 
 	
 NextChecks:
-	ld a, [OpponentCaughtBall]
-	cp a, 1
-	jp z, CheckReady
-	ld a, [OpponentBallThrown]
-	cp a, 1
-	jp z, CheckReady
-	ret
+;	ld a, [OpponentCaughtBall]
+;	cp a, 1
+;	jp z, CheckReady
+;	ld a, [OpponentBallThrown]
+;	cp a, 1
+;	jp z, CheckReady
+;	ret
 
 CheckReady:
-	ld a, [OpponentMoveWithBallPeriod]
-	cp a, 1			; needs to be one as it is one elsewhere
-	jp z, ActualMoveBallFromOpponent
-	ret
+;	ld a, [OpponentMoveWithBallPeriod]
+;	cp a, 1			; needs to be one as it is one elsewhere
+;	jp z, ActualMoveBallFromOpponent
+;	ret
 
 ActualMoveBallFromOpponent:
 	; reset OpponentCaughtBall so that BallMoveWithOpponent no longer keeps ball stuck to opponent
-	ld a, 0
-	ld  [OpponentCaughtBall], a
+;	ld a, 0
+;	ld  [OpponentCaughtBall], a
 
 	; now add check to see if ball has hit lower wall, if it has jp to HitLowerWall
 	ld a, [_OAMRAM + 4]
@@ -442,22 +445,31 @@ CanMoveBallFromOpponent:
 	ld a, [_OAMRAM + 4]	; y coord of ball in a
 	inc a
 	ld [_OAMRAM + 4], a
-	ld a, 1
-	ld [OpponentBallThrown], a
+;	ld a, 1
+;	ld [OpponentBallThrown], a
 
 	ret
 
 HitLowerWall:
+	ld a, 0
+	ld [OpponentBallThrown], a
+	
 	ret
 
 HitPlayer:
 	; need ball to bounce off
 	;	call BounceOffPlayer maybe opponent
-	ld a, 1
-	ld [BallHitPlayer], a
+;	ld a, 1
+;	ld [BallHitPlayer], a
 	;	call BounceOffPlayer
-	ld a, 1
-	ld [MBFO], a
+;	ld a, 1
+	;	ld [MBFO], a
+	ld a, 0
+	ld [OpponentBallThrown], a
+	call BounceOffPlayer
+	ret
+
+OpponentNotThrown:
 	ret
 
 BounceOffPlayer:
@@ -571,6 +583,8 @@ DoMove:
 	ld [OpponentStationaryCatchCounter], a ; need to load new value back in
 	ld a, 1
 	ld [OpponentCaughtBall], a
+	ld a, 1
+	ld [OpponentBallThrown], a
 	ret
 NoMoreMove:		 ; this code is never run
 	; opponent has now caught the stationary ball
