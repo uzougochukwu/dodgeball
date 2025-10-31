@@ -17,6 +17,7 @@ SECTION "Header", ROM0[$100]
 	ld [OpponentBallThrown], a
 
 	ld [BallHitOpponent], a
+	ld [BallHitPlayer], a
 
 	ld [OpponentCaughtBall], a
 
@@ -367,6 +368,12 @@ UpdateKeys:
 	ret
 
 MoveBallFromOpponent:
+	ld a, [BallHitPlayer]
+	cp a, 1
+	jp z, BounceOffPlayer
+
+	
+NextChecks:
 	ld a, [OpponentCaughtBall]
 	cp a, 1
 	jp z, CheckReady
@@ -386,29 +393,29 @@ ActualMoveBallFromOpponent:
 	ld a, 0
 	ld  [OpponentCaughtBall], a
 
-	; now add check to see if it has hit lower wall, if it has jp to HitWall
+	; now add check to see if ball has hit lower wall, if it has jp to HitLowerWall
 	ld a, [_OAMRAM + 4]
 	cp a, 150
 	;jp c, HitLowerWall
 	jp z, HitLowerWall
 	
-	; now check to see if it has hit the opponent, if it has jp to HitOpponent
-	ld a, [_OAMRAM+8]	; y coord of opponent in a
-	ld b, a			; y coord of opponent in b
+	; now check to see if it has hit the player, if it has jp to HitOpponent
+	ld a, [_OAMRAM]	; y coord of player in a
+	ld b, a			; y coord of player in b
 	ld a, [_OAMRAM+4]	; y coord of ball in a
 	; for ease of programming, test that they are equal only
 	cp a, b
-	jp nz, CanMoveBallFromOpponent		; if the y coords of ball and opponent are not equal, go to CanMove
+	jp nz, CanMoveBallFromOpponent		; if the y coords of ball and opponent are not equal, go to CanMoveBallFromOpponent
 
-	ld a, [_OAMRAM+9]	; x coord of opponent in a
-	ld b, a			; x coord of opponent in b
-	ld a, [_OAMRAM+5]	; x coord of ball in a
+	ld a, [_OAMRAM+1]	; x coord of player in a
+	ld b, a			; x coord of player in b
+	ld a, [_OAMRAM+4]	; x coord of ball in a
 	cp a, b
-	jp z, HitPlayer	; if zero flag is set, x coords are equal, so we jp to HitOpponent
+	jp z, HitPlayer	; if zero flag is set, x coords are equal, so we jp to HitPlayer
 
 
 CanMoveBallFromOpponent:	
-	ld a, [_OAMRAM + 4]
+	ld a, [_OAMRAM + 4]	; y coord of ball in a
 	inc a
 	ld [_OAMRAM + 4], a
 	ld a, 1
@@ -420,6 +427,23 @@ HitLowerWall:
 	ret
 
 HitPlayer:
+	; need ball to bounce off
+	;	call BounceOffPlayer maybe opponent
+	call BounceOffPlayer
+	ret
+
+BounceOffPlayer:
+	ld a, 1
+	ld [BallHitPlayer], a	; so that next iteration of MoveBallFromOpponent, will not run due to this flag being set
+	
+	ld a, [_OAMRAM + 4]	; y coord of ball is in a
+	sub a, 10		; we want the ball to move down screen after hitting opponent
+	ld [_OAMRAM + 4], a
+	; change x coord of ball too
+	ld a, [_OAMRAM + 5]	; x coord of ball is in a
+;	sub a, 3; for testing purposes, have x stay the same
+	ld [_OAMRAM + 5], a
+	
 	ret
 	
 
@@ -486,7 +510,7 @@ BounceOffOpponent:
 	ld [_OAMRAM + 4], a
 	; change x coord of ball too
 	ld a, [_OAMRAM + 5]	; x coord of ball is in a
-	add a, 3
+;	add a, 3; for testing purposes have x stay the same
 	ld [_OAMRAM + 5], a
 	
 	ret
@@ -968,3 +992,4 @@ OpponentCaughtBall: db
 OpponentStationaryCatchCounter: db
 OpponentMoveWithBallPeriod: db
 ReadyToThrow: db
+BallHitPlayer: db
