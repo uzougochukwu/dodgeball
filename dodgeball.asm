@@ -374,7 +374,7 @@ MoveBallFromOpponent:
 
 CheckReady:
 	ld a, [OpponentMoveWithBallPeriod]
-	cp a, 20
+	cp a, 1			; needs to be one as it is one elsewhere
 	jp z, ActualMoveBallFromOpponent
 	ret
 
@@ -540,7 +540,7 @@ OpponentMoveWithBall:
 
 
 MoveOpponent:
-	; check opp mov w ball per, if not 60, exit
+	; check opp mov w ball per, if not 1, exit
 	ld a, [OpponentMoveWithBallPeriod]
 	cp a, 1
 	jp z, ReadyMove
