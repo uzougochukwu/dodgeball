@@ -379,6 +379,9 @@ CheckReady:
 	ret
 
 ActualMoveBallFromOpponent:
+	; reset OpponentCaughtBall so that BallMoveWithOpponent no longer keeps ball stuck to opponent
+	ld a, 0
+	ld  [OpponentCaughtBall], a
 
 	; now add check to see if it has hit wall, if it has jp to HitWall
 	ld a, [_OAMRAM + 4]
