@@ -23,6 +23,8 @@ SECTION "Header", ROM0[$100]
 	ld [OpponentStationaryCatchCounter], a
 	ld [OpponentMoveWithBallPeriod], a
 	ld [ReadyToThrow], a
+	ld a, 1
+	ld [MoveRight], a
 	
 	
 
@@ -550,29 +552,66 @@ OpponentMoveWithBall:
 
 MoveOpponent:
 	; check opp mov w ball per, if not 1, exit
-	ld a, [OpponentMoveWithBallPeriod]
-	cp a, 1
-	jp z, ReadyMove
-	ld a, [OpponentMoveWithBallPeriod]
-	inc a
-	ld [OpponentMoveWithBallPeriod], a
-	ret
+;	ld a, [OpponentMoveWithBallPeriod]
+;	cp a, 1
+;	jp z, ReadyMove
+;	ld a, [OpponentMoveWithBallPeriod]
+;	inc a
+;	ld [OpponentMoveWithBallPeriod], a
+;	ret
 	
 	
 ReadyMove:
+	ld a, [MoveRight]
+	cp a, 1
+	jp nz, MoveLeft
 	ld a, [_OAMRAM + 8]	; y pos of opponent is in a
 	inc a
 	ld [_OAMRAM + 8], a
 
 	ld a, [_OAMRAM + 9]	; x pos of opponent is in a
+	; check if opponent has hit wall
+	cp a, 108
+	jp nc, MoveLeft
 	add a, 5
 	ld [_OAMRAM + 9], a
+
+	
+
 
 	ld a, [OpponentMoveWithBallPeriod]
 	inc a
 	ld [OpponentMoveWithBallPeriod], a
 	ld a, [ReadyToThrow]
 	inc a
+	
+	
+	ret
+
+MoveLeft:
+	ld a, 0
+	ld [MoveRight], a
+	
+	
+	ld a, [_OAMRAM + 9]	; x pos of opponent is in a
+	cp a, 10
+	jp nc, ActualMoveLeft
+	ld a, 1
+	ld [MoveRight], a
+	ret
+
+ActualMoveLeft:
+	sub a, 5
+
+	; test for left wall if it hits left wall, switch MoveRight flag back to 1 and return
+
+	ld a, [OpponentMoveWithBallPeriod]
+	inc a
+	ld [OpponentMoveWithBallPeriod], a
+	ld a, [ReadyToThrow]
+	inc a
+	
+	
 	ret
 
 	; create a function BallThrownMovement that moves ball depending on who threw it and whether the ball has hit a wall yet, or player
@@ -968,3 +1007,4 @@ OpponentCaughtBall: db
 OpponentStationaryCatchCounter: db
 OpponentMoveWithBallPeriod: db
 ReadyToThrow: db
+MoveRight: db
