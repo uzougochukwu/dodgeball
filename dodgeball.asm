@@ -24,6 +24,7 @@ SECTION "Header", ROM0[$100]
 	ld [OpponentStationaryCatchCounter], a
 	ld [OpponentMoveWithBallPeriod], a
 	ld [ReadyToThrow], a
+	ld [MBFO], a
 	
 	
 
@@ -191,8 +192,14 @@ WaitForvBlank2:
 
 	call OpponentMoveWithBall ; spend three frames moving with ball towards player, then throw, increment readytothrow flag
 
+	; if MBFO is 1, skip MoveBallFromOpponent
+	
+	ld a, [MBFO]
+	cp a, 1
+	jp z, CheckBounce
 	call MoveBallFromOpponent ; check for OppCaughtBall flag, then call a routine to send ball towards bottom wall
 
+CheckBounce:	
 	call BounceOffPlayer
 
 
@@ -448,7 +455,9 @@ HitPlayer:
 	;	call BounceOffPlayer maybe opponent
 	ld a, 1
 	ld [BallHitPlayer], a
-;	call BounceOffPlayer
+	;	call BounceOffPlayer
+	ld a, 1
+	ld [MBFO], a
 	ret
 
 BounceOffPlayer:
@@ -587,6 +596,8 @@ BallMoveWithOpponent:
 ;	ld a, 0
 ;	ld [OpponentCaughtBall], a
 ;;	call OpponentMoveWithBall ; might be better having this in main and make it run for a few frames
+	ld a, 0
+	ld [MBFO], a
 LastOfBMWO:
 	
 	ret
@@ -1019,3 +1030,4 @@ OpponentStationaryCatchCounter: db
 OpponentMoveWithBallPeriod: db
 ReadyToThrow: db
 BallHitPlayer: db
+MBFO: db
