@@ -155,11 +155,16 @@ WaitForvBlank2:
 	call MoveBallFromPlayer
 
 	; if ball has been caught by opponent, run the opponent ball caught update routine
-	ld a, [OpponentCaughtBall]
-	cp a, 1
-	jp nz, CheckBallCaughtByPlayer
+;	ld a, [OpponentCaughtBall]
+;	cp a, 1
+;	jp nz, CheckBallCaughtByPlayer
+
+	call OpponentMoveToCatchStationaryBall
+	
 	; if opponent caught the ball, run the BallMoveWithOpponent
-	call BallMoveWithOpponent
+;	call BallMoveWithOpponent
+
+
 
 CheckBallCaughtByPlayer:
 	; if ball has been caught by the player, run the ball-caught update routine
@@ -403,10 +408,10 @@ BounceOffOpponent:
 	ret
 
 OpponentMoveToCatchStationaryBall: ; this must run from main regardless, use flags to determine whether code is executed
-	ld a, [BallHitOpponent]
-	cp a, 1
-	jp z, ActualOpponentMove
-	ret
+;	ld a, [BallHitOpponent]
+;	cp a, 1
+;	jp z, ActualOpponentMove
+;	ret
 	
 ActualOpponentMove:	
 	ld a, [OpponentStationaryCatchCounter]
@@ -423,6 +428,8 @@ NoMoreMove:
 	; opponent has now caught the stationary ball
 	ld a, 1
 	ld [OpponentCaughtBall], a ; so when we call ball move with opponent, from main, it will actually keep the ball with the opponent
+	ld a, 0
+	ld [BallHitOpponent], a
 	ret
 
 BallMoveWithOpponent:
@@ -432,6 +439,9 @@ BallMoveWithOpponent:
 	ld a, [_OAMRAM + 8]	; y coord of opponent in A
 	add a, 5
 	ld [_OAMRAM + 4], a	; y coord of ball is 5 more than opponent
+	ld a, 0
+	ld [OpponentCaughtBall], a
+	
 	ret
 	
 
