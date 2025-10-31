@@ -516,7 +516,7 @@ DoMove:
 	ld a, [_OAMRAM + 9]
 	cp a, 113
 	jp z, MoveOpponentToLeft
-	inc a
+	add a, 10
 	ld [_OAMRAM + 9], a
 	
 	
@@ -528,7 +528,7 @@ DoMove:
 	ret
 
 MoveOpponentToLeft:
-	dec a
+	sub a, 10
 	ld [_OAMRAM + 9], a
 	ret
 NoMoreMove:		 ; this code is never run
