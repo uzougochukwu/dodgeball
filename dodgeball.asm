@@ -157,7 +157,7 @@ WaitForvBlank2:
 	; if ball has been caught by opponent, run the opponent ball caught update routine
 	ld a, [OpponentCaughtBall]
 	cp a, 1
-	jp z, CheckBallCaughtByPlayer
+	jp nz, CheckBallCaughtByPlayer
 	; if opponent caught the ball, run the BallMoveWithOpponent
 	call BallMoveWithOpponent
 
