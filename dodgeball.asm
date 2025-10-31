@@ -370,6 +370,9 @@ MoveBallFromOpponent:
 	ld a, [OpponentCaughtBall]
 	cp a, 1
 	jp z, CheckReady
+	ld a, [OpponentBallThrown]
+	cp a, 1
+	jp z, CheckReady
 	ret
 
 CheckReady:
