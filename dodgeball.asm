@@ -15,6 +15,9 @@ SECTION "Header", ROM0[$100]
 	ld [BallCaught], a
 	ld [PlayerBallThrown], a
 	ld [OpponentBallThrown], a
+	ld [BallHitOpponent], a
+	ld [OpponentCaughtBall], a
+	ld [OpponentStationaryCatchCounter], a
 	
 	
 
@@ -151,6 +154,14 @@ WaitForvBlank2:
 
 	call MoveBallFromPlayer
 
+	; if ball has been caught by opponent, run the opponent ball caught update routine
+	ld a, [OpponentCaughtBall]
+	cp a, 1
+	jp z, CheckBallCaughtByPlayer
+	; if opponent caught the ball, run the BallMoveWithOpponent
+	call BallMoveWithOpponent
+
+CheckBallCaughtByPlayer:
 	; if ball has been caught by the player, run the ball-caught update routine
 	ld a, [BallCaught]
 	cp a, 1
@@ -373,6 +384,8 @@ HitOpponent:
 	; and we set the PlayerBallThrown flag to 0
 	ld a, 0
 	ld [PlayerBallThrown], a
+	ld a, 1
+	ld [BallHitOpponent], a	; set flag for BallHitOpponent to 1, so that when we call the Opponent catch routine from main, the opponent will move to catch the ball
 	call BounceOffOpponent
 
 	ret
@@ -388,6 +401,31 @@ BounceOffOpponent:
 	ld [_OAMRAM + 5], a
 	
 	ret
+
+OpponentMoveToCatchStationaryBall:
+	ld a, [OpponentStationaryCatchCounter]
+	cp a, 8
+	jp z, NoMoreMove
+	ld a, [_OAMRAM + 8]     ;y coord of opponent
+	inc a
+	ld [_OAMRAM + 8], a
+	ld a, [OpponentStationaryCatchCounter]
+	inc a
+	ret
+NoMoreMove:
+	; opponent has now caught the stationary ball
+	ld a, 1
+	ld [OpponentCaughtBall], a ; so when we call ball move with opponent, from main, it will actually keep the ball with the opponent
+	ret
+
+BallMoveWithOpponent:
+	ld a, [_OAMRAM + 9] 	; x coord of opponent in a
+	ld [_OAMRAM + 5], a	; opponent and ball have same x coord
+	ld a, [_OAMRAM + 8]	; y coord of opponent in A
+	add a, 5
+	ld [_OAMRAM + 4], a	; y coord of ball is 5 more than opponent
+	ret
+	
 
 	; create a function BallThrownMovement that moves ball depending on who threw it and whether the ball has hit a wall yet, or player
 
@@ -777,3 +815,6 @@ NewKeys: db
 BallCaught: db
 PlayerBallThrown: db
 OpponentBallThrown: db
+BallHitOpponent: db
+OpponentCaughtBall: db
+OpponentStationaryCatchCounter: db
