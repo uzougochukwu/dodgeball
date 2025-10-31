@@ -388,7 +388,7 @@ ActualMoveBallFromOpponent:
 
 	; now add check to see if it has hit lower wall, if it has jp to HitWall
 	ld a, [_OAMRAM + 4]
-	cp a, 80
+	cp a, 150
 	;jp c, HitLowerWall
 	jp z, HitLowerWall
 	
