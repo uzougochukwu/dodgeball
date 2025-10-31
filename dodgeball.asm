@@ -338,7 +338,18 @@ CheckThrow:
 	ld [PlayerBallThrown], a ; set PlayerBallThrown flag to 1
 	ld a, 0
 	ld [OpponentBallThrown], a ; set OpponentBallThrown flag to 0	
-;	call BallThrownMovement
+	;	call BallThrownMovement
+
+	ld a, $30
+	ld [$FF10], a		; set sweep time to 1 (sweep time allows freq. to gradually increase or decrease), but 1 means it stays samee
+	ld a, $60
+	ld [$FF11], a		; set length of sound
+	ld a, $73
+	ld [$FF12], a		; volume and how volume changes
+	ld a, $80
+	ld [$FF13], a		; set frequency
+	ld a, $FF
+	ld [$FF14], a		; playback length for sound (not sure how this differs from usual length)
 	jp Main
 
 UpdateKeys:
