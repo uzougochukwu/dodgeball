@@ -402,7 +402,13 @@ BounceOffOpponent:
 	
 	ret
 
-OpponentMoveToCatchStationaryBall:
+OpponentMoveToCatchStationaryBall: ; this must run from main regardless, use flags to determine whether code is executed
+	ld a, [BallHitOpponent]
+	cp a, 1
+	jp z, ActualOpponentMove
+	ret
+	
+ActualOpponentMove:	
 	ld a, [OpponentStationaryCatchCounter]
 	cp a, 8
 	jp z, NoMoreMove
@@ -411,6 +417,7 @@ OpponentMoveToCatchStationaryBall:
 	ld [_OAMRAM + 8], a
 	ld a, [OpponentStationaryCatchCounter]
 	inc a
+	
 	ret
 NoMoreMove:
 	; opponent has now caught the stationary ball
@@ -419,6 +426,7 @@ NoMoreMove:
 	ret
 
 BallMoveWithOpponent:
+	; need code in main that checks the OpponentStationaryCatchCounter, and runs this code if it is 8
 	ld a, [_OAMRAM + 9] 	; x coord of opponent in a
 	ld [_OAMRAM + 5], a	; opponent and ball have same x coord
 	ld a, [_OAMRAM + 8]	; y coord of opponent in A
