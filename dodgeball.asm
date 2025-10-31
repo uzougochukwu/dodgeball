@@ -505,20 +505,59 @@ ActualOpponentMove:
 ;	jp c, DoMove	; might be due to frame timer, maybe use c to compare greater than, rather than equality
 ;	jp NoMoreMove
 
-DoMove:	
+DoMove:
+	; if x coord exceeds 100, moveRight flag set to 0
+	; if x coord is less than 5, moveRight flag set to 1
+	; flag set at top of DoMove function, movement takes place after y coord handled
+	; check right wall
+	ld a, [_OAMRAM + 9]	; x coord opponent
+	cp a, 100
+	jp nc, MoveRightOff
+	jp CheckLeftWall
+
+MoveRightOff:
+	ld a, 0
+	ld [MoveRight], a
+
+CheckLeftWall:
+	ld a, [_OAMRAM + 9]	; x coord opponent
+	cp a, 15
+	jp nc, BeginMovement
+	; if c is set, a is less than 5, so moveRight flag must be set to 1
+	ld a, 1
+	ld [MoveRight], a
+	
+	
+BeginMovement:
+	
 	ld a, [_OAMRAM + 8]     ;y coord of opponent
 	inc a
 	ld [_OAMRAM + 8], a	; move opponent down
 
-	; check whether opponent has hit a wall, if so move opposite
-
-	; check right wall
-	ld a, [_OAMRAM + 9]
-	cp a, 105
-	jp nc, MoveOpponentToLeft
+	; do x movement based on flag
+	ld a, [MoveRight]
+	cp a, 1
+	jp nz, LeftMovement
+	; a was 1, so we move right
+	ld a, [_OAMRAM + 9]	; x coord opponent
 	add a, 10
 	ld [_OAMRAM + 9], a
-	
+	jp AfterMovement
+
+LeftMovement:
+
+	ld a, [_OAMRAM + 9]	; x coord opponent
+	sub a, 10
+	ld [_OAMRAM + 9], a
+
+	; check right wall
+;	ld a, [_OAMRAM + 9]
+;	cp a, 100
+;	jp nc, MoveOpponentToLeft
+;	add a, 10
+;	ld [_OAMRAM + 9], a
+
+AfterMovement:
 	
 	ld a, [OpponentStationaryCatchCounter]
 	inc a
