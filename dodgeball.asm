@@ -22,6 +22,7 @@ SECTION "Header", ROM0[$100]
 
 	ld [OpponentStationaryCatchCounter], a
 	ld [OpponentMoveWithBallPeriod], a
+	ld [ReadyToThrow], a
 	
 	
 
@@ -187,8 +188,9 @@ WaitForvBlank2:
 ;	cp a, 60
 ;	jp z, CheckBallCaughtByPlayer
 
-	call OpponentMoveWithBall ; spend three frames moving with ball towards player, then throw
+	call OpponentMoveWithBall ; spend three frames moving with ball towards player, then throw, increment readytothrow flag
 
+	call MoveBallFromOpponent ; check for OppCaughtBall flag, then call a routine to send ball towards bottom wall
 
 
 CheckBallCaughtByPlayer:
@@ -364,6 +366,54 @@ UpdateKeys:
 .knownret
 	ret
 
+MoveBallFromOpponent:
+	ld a, [OpponentCaughtBall]
+	cp a, 1
+	jp z, CheckReady
+	ret
+
+CheckReady:
+	ld a, [OpponentMoveWithBallPeriod]
+	cp a, 20
+	jp z, ActualMoveBallFromOpponent
+	ret
+
+ActualMoveBallFromOpponent:
+
+	; now add check to see if it has hit wall, if it has jp to HitWall
+	ld a, [_OAMRAM + 4]
+	cp a, 15
+	jp c, HitLowerWall
+
+	; now check to see if it has hit the opponent, if it has jp to HitOpponent
+	ld a, [_OAMRAM+8]	; y coord of opponent in a
+	ld b, a			; y coord of opponent in b
+	ld a, [_OAMRAM+4]	; y coord of ball in a
+	; for ease of programming, test that they are equal only
+	cp a, b
+	jp nz, CanMoveBallFromOpponent		; if the y coords of ball and opponent are not equal, go to CanMove
+
+	ld a, [_OAMRAM+9]	; x coord of opponent in a
+	ld b, a			; x coord of opponent in b
+	ld a, [_OAMRAM+5]	; x coord of ball in a
+	cp a, b
+	jp z, HitPlayer	; if zero flag is set, x coords are equal, so we jp to HitOpponent
+
+
+CanMoveBallFromOpponent:	
+	ld a, [_OAMRAM + 4]
+	dec a
+	ld [_OAMRAM + 4], a
+
+	ret
+
+HitLowerWall:
+	ret
+
+HitPlayer:
+	ret
+	
+
 MoveBallFromPlayer:
 	ld a, [PlayerBallThrown]
 	cp a, 1
@@ -509,6 +559,8 @@ ReadyMove:
 	ld a, [OpponentMoveWithBallPeriod]
 	inc a
 	ld [OpponentMoveWithBallPeriod], a
+	ld a, [ReadyToThrow]
+	inc a
 	ret
 
 	; create a function BallThrownMovement that moves ball depending on who threw it and whether the ball has hit a wall yet, or player
@@ -903,3 +955,4 @@ BallHitOpponent: db
 OpponentCaughtBall: db
 OpponentStationaryCatchCounter: db
 OpponentMoveWithBallPeriod: db
+ReadyToThrow: db
