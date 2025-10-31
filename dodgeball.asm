@@ -373,7 +373,15 @@ HitOpponent:
 	; and we set the PlayerBallThrown flag to 0
 	ld a, 0
 	ld [PlayerBallThrown], a
+	call BounceOffOpponent
 
+	ret
+
+
+BounceOffOpponent:
+	ld a, [_OAMRAM + 4]	; y coord of ball is in a
+	add a, 4		; we want the ball to move down screen after hitting opponent
+	ld [_OAMRAM + 4], a
 	ret
 
 	; create a function BallThrownMovement that moves ball depending on who threw it and whether the ball has hit a wall yet, or player
