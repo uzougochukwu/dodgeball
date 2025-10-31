@@ -514,36 +514,8 @@ DoMove:
 	ld [OpponentStationaryCatchCounter], a ; need to load new value back in
 	ld a, 1
 	ld [OpponentCaughtBall], a
-	call OpponentMoveWithBall ; see if works
-	ret
-NoMoreMove:		 ; this code is never run
-	; opponent has now caught the stationary ball
-	ld a, 1
-	ld [OpponentCaughtBall], a ; so when we call ball move with opponent, from main, it will actually keep the ball with the opponent
-	ld a, 0
-	ld [BallHitOpponent], a
-	ret
-
-BallMoveWithOpponent:
-	; need code in main that checks the OpponentStationaryCatchCounter, and runs this code if it is 8
-	ld a, [OpponentBallThrown]
-	cp a, 1
-	jp nz, LastOfBMWO
-	ld a, [OpponentCaughtBall]
-	cp a, 1
-	jp nz, LastOfBMWO
-	ld a, [_OAMRAM + 9] 	; x coord of opponent in a
-	ld [_OAMRAM + 5], a	; opponent and ball have same x coord
-	ld a, [_OAMRAM + 8]	; y coord of opponent in A
-	add a, 5
-	ld [_OAMRAM + 4], a	; y coord of ball is 5 more than opponent
-;	ld a, 0
-;	ld [OpponentCaughtBall], a
-;;	call OpponentMoveWithBall ; might be better having this in main and make it run for a few frames
-LastOfBMWO:
-	
-	ret
-
+	;call OpponentMoveWithBall ; see if works
+	; OpponentMoveWithBall must run below here
 OpponentMoveWithBall:
 	ld a, [OpponentCaughtBall]
 	cp a, 1
@@ -612,7 +584,37 @@ ActualMoveLeft:
 	ld a, [ReadyToThrow]
 	inc a
 	
+	
 	ret
+NoMoreMove:		 ; this code is never run
+	; opponent has now caught the stationary ball
+	ld a, 1
+	ld [OpponentCaughtBall], a ; so when we call ball move with opponent, from main, it will actually keep the ball with the opponent
+	ld a, 0
+	ld [BallHitOpponent], a
+	ret
+
+BallMoveWithOpponent:
+	; need code in main that checks the OpponentStationaryCatchCounter, and runs this code if it is 8
+	ld a, [OpponentBallThrown]
+	cp a, 1
+	jp nz, LastOfBMWO
+	ld a, [OpponentCaughtBall]
+	cp a, 1
+	jp nz, LastOfBMWO
+	ld a, [_OAMRAM + 9] 	; x coord of opponent in a
+	ld [_OAMRAM + 5], a	; opponent and ball have same x coord
+	ld a, [_OAMRAM + 8]	; y coord of opponent in A
+	add a, 5
+	ld [_OAMRAM + 4], a	; y coord of ball is 5 more than opponent
+;	ld a, 0
+;	ld [OpponentCaughtBall], a
+;;	call OpponentMoveWithBall ; might be better having this in main and make it run for a few frames
+LastOfBMWO:
+	
+	ret
+
+
 
 	; create a function BallThrownMovement that moves ball depending on who threw it and whether the ball has hit a wall yet, or player
 
