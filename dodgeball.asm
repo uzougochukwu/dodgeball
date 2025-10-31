@@ -405,8 +405,10 @@ ActualMoveBallFromOpponent:
 
 CanMoveBallFromOpponent:	
 	ld a, [_OAMRAM + 4]
-	dec a
+	inc a
 	ld [_OAMRAM + 4], a
+	ld a, 1
+	ld [OpponentBallThrown], a
 
 	ret
 
@@ -517,6 +519,9 @@ NoMoreMove:		 ; this code is never run
 
 BallMoveWithOpponent:
 	; need code in main that checks the OpponentStationaryCatchCounter, and runs this code if it is 8
+	ld a, [OpponentBallThrown]
+	cp a, 1
+	jp nz, LastOfBMWO
 	ld a, [OpponentCaughtBall]
 	cp a, 1
 	jp nz, LastOfBMWO
