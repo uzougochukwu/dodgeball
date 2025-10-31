@@ -489,7 +489,7 @@ OpponentMoveWithBall:
 MoveOpponent:
 	; check opp mov w ball per, if not 60, exit
 	ld a, [OpponentMoveWithBallPeriod]
-	cp a, 5
+	cp a, 1
 	jp z, ReadyMove
 	ld a, [OpponentMoveWithBallPeriod]
 	inc a
@@ -503,7 +503,7 @@ ReadyMove:
 	ld [_OAMRAM + 8], a
 
 	ld a, [_OAMRAM + 9]	; x pos of opponent is in a
-	inc a
+	add a, 5
 	ld [_OAMRAM + 9], a
 
 	ld a, [OpponentMoveWithBallPeriod]
