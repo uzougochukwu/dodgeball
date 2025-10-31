@@ -190,7 +190,7 @@ WaitForvBlank2:
 ;	cp a, 60
 ;	jp z, CheckBallCaughtByPlayer
 
-	call OpponentMoveWithBall ; spend three frames moving with ball towards player, then throw, increment readytothrow flag
+;	call OpponentMoveWithBall ; spend three frames moving with ball towards player, then throw, increment readytothrow flag
 
 	call MoveBallFromOpponent ; check for OppCaughtBall flag, then call a routine to send ball towards bottom wall
 
@@ -516,83 +516,14 @@ DoMove:
 	ld [OpponentCaughtBall], a
 	;call OpponentMoveWithBall ; see if works
 	; OpponentMoveWithBall must run below here
-OpponentMoveWithBall:
-	ld a, [OpponentCaughtBall]
-	cp a, 1
-	jp z, MoveOpponent
-	ret
-
-
-MoveOpponent:
-	; check opp mov w ball per, if not 1, exit
-;	ld a, [OpponentMoveWithBallPeriod]
-;	cp a, 1
-;	jp z, ReadyMove
-;	ld a, [OpponentMoveWithBallPeriod]
-;	inc a
-;	ld [OpponentMoveWithBallPeriod], a
-;	ret
-	
-	
-ReadyMove:
-	ld a, [MoveRight]
-	cp a, 1
-	jp nz, MoveLeft
-	ld a, [_OAMRAM + 8]	; y pos of opponent is in a
-	inc a
-	ld [_OAMRAM + 8], a
-
-	ld a, [_OAMRAM + 9]	; x pos of opponent is in a
-	; check if opponent has hit wall
-	cp a, 108
-	jp nc, MoveLeft
-	add a, 5
-	ld [_OAMRAM + 9], a
-
-	
-
-
-	ld a, [OpponentMoveWithBallPeriod]
-	inc a
-	ld [OpponentMoveWithBallPeriod], a
-	ld a, [ReadyToThrow]
-	inc a
-	
-	
-	ret
-
-MoveLeft:
-	ld a, 0
-	ld [MoveRight], a
-	
-	
-	ld a, [_OAMRAM + 9]	; x pos of opponent is in a
-	cp a, 10
-	jp nc, ActualMoveLeft
-	ld a, 1
-	ld [MoveRight], a
-	ret
-
-ActualMoveLeft:
-	sub a, 5
-
-	; test for left wall if it hits left wall, switch MoveRight flag back to 1 and return
-
-	ld a, [OpponentMoveWithBallPeriod]
-	inc a
-	ld [OpponentMoveWithBallPeriod], a
-	ld a, [ReadyToThrow]
-	inc a
-	
-	
-	ret
+ret
 NoMoreMove:		 ; this code is never run
 	; opponent has now caught the stationary ball
-	ld a, 1
-	ld [OpponentCaughtBall], a ; so when we call ball move with opponent, from main, it will actually keep the ball with the opponent
-	ld a, 0
-	ld [BallHitOpponent], a
-	ret
+;	ld a, 1
+;	ld [OpponentCaughtBall], a ; so when we call ball move with opponent, from main, it will actually keep the ball with the opponent
+;	ld a, 0
+;	ld [BallHitOpponent], a
+;	ret
 
 BallMoveWithOpponent:
 	; need code in main that checks the OpponentStationaryCatchCounter, and runs this code if it is 8
