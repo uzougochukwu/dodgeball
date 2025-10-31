@@ -514,8 +514,8 @@ DoMove:
 
 	; check right wall
 	ld a, [_OAMRAM + 9]
-	cp a, 113
-	jp z, MoveOpponentToLeft
+	cp a, 105
+	jp nc, MoveOpponentToLeft
 	add a, 10
 	ld [_OAMRAM + 9], a
 	
