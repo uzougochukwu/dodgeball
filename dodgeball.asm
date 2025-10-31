@@ -179,7 +179,7 @@ WaitForvBlank2:
 	ld [BallHitOpponent], a
 	
 	; if opponent caught the ball, run the BallMoveWithOpponent
-;	call BallMoveWithOpponent
+	call BallMoveWithOpponent
 
 
 
