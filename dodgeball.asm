@@ -21,6 +21,7 @@ SECTION "Header", ROM0[$100]
 	ld [OpponentCaughtBall], a
 
 	ld [OpponentStationaryCatchCounter], a
+	ld [OpponentMoveWithBallPeriod], a
 	
 	
 
@@ -180,6 +181,13 @@ WaitForvBlank2:
 	
 	; if opponent caught the ball, run the BallMoveWithOpponent
 	call BallMoveWithOpponent
+
+	ld a, [OpponentMoveWithBallPeriod] ; need to increment this in OpponentMoveWithBall
+	; OpponentMoveWithBall should only run if BallCaughtByPlayer flag is set
+	cp a, 3
+	jp z, CheckBallCaughtByPlayer
+
+	call OpponentMoveWithBall ; spend three frames moving with ball towards player, then throw
 
 
 
@@ -464,12 +472,29 @@ BallMoveWithOpponent:
 	ld a, [_OAMRAM + 8]	; y coord of opponent in A
 	add a, 5
 	ld [_OAMRAM + 4], a	; y coord of ball is 5 more than opponent
-	ld a, 0
-	ld [OpponentCaughtBall], a
+;	ld a, 0
+;	ld [OpponentCaughtBall], a
+;;	call OpponentMoveWithBall ; might be better having this in main and make it run for a few frames
 LastOfBMWO:
 	
 	ret
-	
+
+OpponentMoveWithBall:
+	ld a, [OpponentCaughtBall]
+	cp a, 1
+	jp z, MoveOpponent
+	ret
+
+
+MoveOpponent:	
+	ld a, [_OAMRAM + 8]	; y pos of opponent is in a
+	inc a
+	ld [_OAMRAM + 8], a
+
+	ld a, [_OAMRAM + 9]	; x pos of opponent is in a
+	inc a
+	ld [_OAMRAM + 9], a
+	ret
 
 	; create a function BallThrownMovement that moves ball depending on who threw it and whether the ball has hit a wall yet, or player
 
@@ -862,3 +887,4 @@ OpponentBallThrown: db
 BallHitOpponent: db
 OpponentCaughtBall: db
 OpponentStationaryCatchCounter: db
+OpponentMoveWithBallPeriod: db
