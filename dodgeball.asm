@@ -368,6 +368,7 @@ UpdateKeys:
 	ret
 
 MoveBallFromOpponent:
+;	call BounceOffPlayer 	; added here for testing
 	ld a, [BallHitPlayer]
 	cp a, 1
 	jp z, BounceOffPlayer
@@ -398,14 +399,15 @@ ActualMoveBallFromOpponent:
 	cp a, 150
 	;jp c, HitLowerWall
 	jp z, HitLowerWall
+
 	
 	; now check to see if it has hit the player, if it has jp to HitOpponent
-	ld a, [_OAMRAM]	; y coord of player in a
-	ld b, a			; y coord of player in b
-	ld a, [_OAMRAM+4]	; y coord of ball in a
+;	ld a, [_OAMRAM]	; y coord of player in a
+;	ld b, a			; y coord of player in b
+;	ld a, [_OAMRAM+4]	; y coord of ball in a
 	; for ease of programming, test that they are equal only
-	cp a, b
-	jp nz, CanMoveBallFromOpponent		; if the y coords of ball and opponent are not equal, go to CanMoveBallFromOpponent
+;	cp a, b
+;	jp nz, CanMoveBallFromOpponent		; if the y coords of ball and opponent are not equal, go to CanMoveBallFromOpponent
 
 	ld a, [_OAMRAM+1]	; x coord of player in a
 	ld b, a			; x coord of player in b
