@@ -83,7 +83,7 @@ ClearOam:
 	ld [hli], a
 	ld [hli], a		; attribute is 0 so 8x8
 
-	; create ball
+	; create ball (one 8x8 sprite)
 	ld hl, _OAMRAM + 4
 	ld a, 79 + 16		; y coord is 79, middle of screen
 	ld [hli], a
@@ -92,6 +92,16 @@ ClearOam:
 	ld a, 1			; tile ID is 1
 	ld [hli], a
 	ld a, 0
+	ld [hli], a
+
+	; create opponent (one 8x8 sprite)
+	ld hl, _OAMRAM + 8
+	ld a, 20 + 16		; y coord is 16
+	ld [hli], a
+	ld a, 53 + 8		; x coord is 53
+	ld [hli], a
+	ld a, 2			; tile ID is 2
+	ld [hli], a
 	ld [hli], a
 	
 
