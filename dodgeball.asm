@@ -514,6 +514,7 @@ DoMove:
 	ld [OpponentStationaryCatchCounter], a ; need to load new value back in
 	ld a, 1
 	ld [OpponentCaughtBall], a
+	call OpponentMoveWithBall ; see if works
 	ret
 NoMoreMove:		 ; this code is never run
 	; opponent has now caught the stationary ball
@@ -610,7 +611,6 @@ ActualMoveLeft:
 	ld [OpponentMoveWithBallPeriod], a
 	ld a, [ReadyToThrow]
 	inc a
-	
 	
 	ret
 
