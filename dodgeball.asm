@@ -184,10 +184,10 @@ WaitForvBlank2:
 
 	ld a, [OpponentMoveWithBallPeriod] ; need to increment this in OpponentMoveWithBall
 	; OpponentMoveWithBall should only run if BallCaughtByPlayer flag is set
-	cp a, 3
+	cp a, 60
 	jp z, CheckBallCaughtByPlayer
 
-	call OpponentMoveWithBall ; spend three frames moving with ball towards player, then throw
+	call OpponentMoveWithBall ; call this 59 times, then actually move on 60th
 
 
 
@@ -486,13 +486,22 @@ OpponentMoveWithBall:
 	ret
 
 
-MoveOpponent:	
+MoveOpponent:
+;	if period is one, exit
+
+	ld a, [OpponentMoveWithBallPeriod]
+	cp a, 60
+	jp z, CanMoveOpponent
+	ret
+	
+CanMoveOpponent:
 	ld a, [_OAMRAM + 8]	; y pos of opponent is in a
 	inc a
 	ld [_OAMRAM + 8], a
 
 	ld a, [_OAMRAM + 9]	; x pos of opponent is in a
-	inc a
+	add a, 5
+;	inc a
 	ld [_OAMRAM + 9], a
 
 	ld a, [OpponentMoveWithBallPeriod]
