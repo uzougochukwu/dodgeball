@@ -54,16 +54,22 @@ WaitForvBlank:
 
 
 	
-	; copy the player tile
+	; copy the player tiles
 	ld de, PlayerCharacter
 	ld hl, $8000
 	ld bc, PlayerCharacterEnd - PlayerCharacter
 	call Memcpy
 
-	; copy the ball tile
+	; copy the ball tiles
 	ld de, Ball
 	ld hl, $8010
 	ld bc, BallEnd - Ball
+	call Memcpy
+
+	; copy the opponent tiles
+	ld de, Opponent
+	ld hl, $8020
+	ld bc, OpponentEnd - Opponent
 	call Memcpy
 
 
