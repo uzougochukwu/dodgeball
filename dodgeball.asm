@@ -386,11 +386,12 @@ ActualMoveBallFromOpponent:
 	ld a, 0
 	ld  [OpponentCaughtBall], a
 
-	; now add check to see if it has hit wall, if it has jp to HitWall
+	; now add check to see if it has hit lower wall, if it has jp to HitWall
 	ld a, [_OAMRAM + 4]
-	cp a, 15
-	jp c, HitLowerWall
-
+	cp a, 80
+	;jp c, HitLowerWall
+	jp z, HitLowerWall
+	
 	; now check to see if it has hit the opponent, if it has jp to HitOpponent
 	ld a, [_OAMRAM+8]	; y coord of opponent in a
 	ld b, a			; y coord of opponent in b
