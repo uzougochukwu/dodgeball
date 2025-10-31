@@ -494,6 +494,10 @@ MoveOpponent:
 	ld a, [_OAMRAM + 9]	; x pos of opponent is in a
 	inc a
 	ld [_OAMRAM + 9], a
+
+	ld a, [OpponentMoveWithBallPeriod]
+	inc a
+	ld [OpponentMoveWithBallPeriod], a
 	ret
 
 	; create a function BallThrownMovement that moves ball depending on who threw it and whether the ball has hit a wall yet, or player
