@@ -390,7 +390,7 @@ ActualMoveBallFromOpponent:
 
 	; now add check to see if it has hit lower wall, if it has jp to HitWall
 	ld a, [_OAMRAM + 4]
-	cp a, 150
+	cp a, 150		; used to be 150
 	;jp c, HitLowerWall
 	jp z, HitLowerWall
 	
@@ -412,6 +412,7 @@ ActualMoveBallFromOpponent:
 CanMoveBallFromOpponent:	
 	ld a, [_OAMRAM + 4]
 	inc a
+	;add a, 2
 	ld [_OAMRAM + 4], a
 	ld a, 1
 	ld [OpponentBallThrown], a
@@ -452,7 +453,8 @@ MoveBallFromPlayer:
 
 CanMove:	
 	ld a, [_OAMRAM + 4]
-	dec a
+		dec a
+	;sub a, 2
 	ld [_OAMRAM + 4], a
 	
 
