@@ -15,8 +15,11 @@ SECTION "Header", ROM0[$100]
 	ld [BallCaught], a
 	ld [PlayerBallThrown], a
 	ld [OpponentBallThrown], a
+
 	ld [BallHitOpponent], a
+
 	ld [OpponentCaughtBall], a
+
 	ld [OpponentStationaryCatchCounter], a
 	
 	
@@ -157,8 +160,13 @@ WaitForvBlank2:
 	; if ball has been caught by opponent, run the opponent ball caught update routine
 ;	ld a, [OpponentCaughtBall]
 ;	cp a, 1
-;	jp nz, CheckBallCaughtByPlayer
+	;	jp nz, CheckBallCaughtByPlayer
 
+	; check how many times the opponent has moved towards ball so it is not too far
+	ld a, [OpponentStationaryCatchCounter]
+	cp a, 1
+	jp z, CheckBallCaughtByPlayer
+	
 	call OpponentMoveToCatchStationaryBall
 	
 	; if opponent caught the ball, run the BallMoveWithOpponent
@@ -408,20 +416,24 @@ BounceOffOpponent:
 	ret
 
 OpponentMoveToCatchStationaryBall: ; this must run from main regardless, use flags to determine whether code is executed
-	ld a, [BallHitOpponent]
-	cp a, 1
-	jp z, ActualOpponentMove
-	ret
+;	ld a, [BallHitOpponent]
+;	cp a, 1
+;	jp z, ActualOpponentMove
+;	ret
 	
 ActualOpponentMove:	
-	ld a, [OpponentStationaryCatchCounter]
-	cp a, 8
-	jp z, NoMoreMove
+;	ld a, [OpponentStationaryCatchCounter]
+;	cp a, 4
+;	jp c, DoMove	; might be due to frame timer, maybe use c to compare greater than, rather than equality
+;	jp NoMoreMove
+
+DoMove:	
 	ld a, [_OAMRAM + 8]     ;y coord of opponent
 	inc a
 	ld [_OAMRAM + 8], a
 	ld a, [OpponentStationaryCatchCounter]
 	inc a
+	ld [OpponentStationaryCatchCounter], a ; need to load new value back in
 	
 	ret
 NoMoreMove:
