@@ -168,6 +168,9 @@ WaitForvBlank2:
 	jp z, CheckBallCaughtByPlayer
 	
 	call OpponentMoveToCatchStationaryBall
+
+	ld a, 0
+	ld [BallHitOpponent], a
 	
 	; if opponent caught the ball, run the BallMoveWithOpponent
 ;	call BallMoveWithOpponent
@@ -416,10 +419,10 @@ BounceOffOpponent:
 	ret
 
 OpponentMoveToCatchStationaryBall: ; this must run from main regardless, use flags to determine whether code is executed
-;	ld a, [BallHitOpponent]
-;	cp a, 1
-;	jp z, ActualOpponentMove
-;	ret
+	ld a, [BallHitOpponent]
+	cp a, 1
+	jp z, ActualOpponentMove
+	ret
 	
 ActualOpponentMove:	
 ;	ld a, [OpponentStationaryCatchCounter]
