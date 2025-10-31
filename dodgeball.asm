@@ -316,6 +316,16 @@ ActualCheckCatch:
 	ld a, 0
 	ld [OpponentBallThrown], a ; set OpponentBallThrown flag to 0
 	;jp Main
+	ld a, $16
+	ld [$FF10], a
+	ld a, $40
+	ld [$FF11], a
+	ld a, $73
+	ld [$FF12], a
+	ld a, $0
+	ld [$FF13], a
+	ld a, $C3
+	ld [$FF14], a
 	
 CheckThrow:
 	ld a, [CurKeys]
