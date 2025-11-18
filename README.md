@@ -1,8 +1,8 @@
-#Dodgeball on the Gameboy Classic DMG-01
+# Dodgeball on the Gameboy Classic DMG-01
 
 This was made using Rednex Game Boy Development System. https://github.com/gbdev/rgbds
 
-##To build this locally:
+## To build this locally:
 
 git clone https://github.com/uzougochukwu/dodgeball
 
