@@ -14,14 +14,7 @@ SECTION "Header", ROM0[$100]
 	ld [NewKeys], a
 	ld [BallCaught], a
 	ld [PlayerBallThrown], a
-	;ld [OpponentBallThrown], a
 
-	;ld [BallHitOpponent], a
-
-	;ld [OpponentCaughtBall], a
-
-	;ld [OpponentStationaryCatchCounter], a
-	;ld [OpponentMoveWithBallPeriod], a
 	ld [ReadyToThrow], a
 	ld a, 1
 	ld [MoveRight], a
@@ -76,12 +69,6 @@ WaitForvBlank:
 	ld bc, BallEnd - Ball
 	call Memcpy
 
-	; copy the opponent tiles
-	;ld de, Opponent
-	;ld hl, $8020
-	;ld bc, OpponentEnd - Opponent
-	;call Memcpy
-
 
 ClearOam:
 	ld [hli], a
@@ -109,17 +96,6 @@ ClearOam:
 	ld [hli], a
 	ld a, 0
 	ld [hli], a
-
-	; create opponent (one 8x8 sprite)
-	;ld hl, _OAMRAM + 8
-	;ld a, 5 + 16		; y coord is 16
-	;ld [hli], a
-	;ld a, 53 + 8		; x coord is 53
-	;ld [hli], a
-	;ld a, 2			; tile ID is 2
-	;ld [hli], a
-	;ld [hli], a
-	
 
 
 	; turn on LCD screen, with objects enabled
@@ -150,49 +126,9 @@ WaitForvBlank2:
 	; check the keys each frame and move left or right
 	call UpdateKeys
 
-	; create a function BallThrownMovement that moves ball depending on who threw it and whether the ball has hit a wall yet, or player - this function should only run after the player presses the throw button
-	; if ball was thrown call BallThrownMovement, else don't
-;	ld a, [PlayerBallThrown]
-;	and a, 1
-;	jp nz, PlayerNotThrow
-;	call BallThrownMovement
 
-	;PlayerNotThrow:
 
 	call MoveBallFromPlayer
-
-	; if ball has been caught by opponent, run the opponent ball caught update routine
-;	ld a, [OpponentCaughtBall]
-;	cp a, 1
-	;	jp nz, CheckBallCaughtByPlayer
-
-	; check how many times the opponent has moved towards ball so it is not too far
-;	ld a, [OpponentStationaryCatchCounter]
-;	cp a, 1
-	;	jp z, CheckBallCaughtByPlayer
-
-	
-	
-	;call OpponentMoveToCatchStationaryBall
-
-;	ld a, [OpponentStationaryCatchCounter]
-;	cp a, 10
-;		jp z, CheckBallCaughtByPlayer ; if the catch counter is 4, the opponent has moved enough, so we can turn off the move opponent towards stationar ball function by switching the ballhitopponent flag off
-
-	;ld a, 0
-	;ld [BallHitOpponent], a
-	
-	; if opponent caught the ball, run the BallMoveWithOpponent
-	;call BallMoveWithOpponent
-
-	;ld a, [OpponentMoveWithBallPeriod] ; need to increment this in OpponentMoveWithBall
-	; OpponentMoveWithBall should only run if BallCaughtByPlayer flag is set
-;	cp a, 60
-;	jp z, CheckBallCaughtByPlayer
-
-	;call OpponentMoveWithBall ; spend three frames moving with ball towards player, then throw, increment readytothrow flag
-
-	;call MoveBallFromOpponent ; check for OppCaughtBall flag, then call a routine to send ball towards bottom wall
 
 
 CheckBallCaughtByPlayer:
@@ -314,8 +250,6 @@ ActualCheckCatch:
 	ld a, 0
 	ld [PlayerBallThrown], a ; set PlayerBallThrown flag to 0
 	ld a, 0
-;	ld [OpponentBallThrown], a ; set OpponentBallThrown flag to 0
-	;jp Main
 	ld a, $16
 	ld [$FF10], a		; set sweep time to 1 (sweep time allows freq. to gradually increase or decrease), but 1 means it stays samee
 	ld a, $40
@@ -337,8 +271,6 @@ CheckThrow:
 	ld a, 1
 	ld [PlayerBallThrown], a ; set PlayerBallThrown flag to 1
 	ld a, 0
-;	ld [OpponentBallThrown], a ; set OpponentBallThrown flag to 0	
-	;	call BallThrownMovement
 
 	ld a, $30
 	ld [$FF10], a		; set sweep time to 1 (sweep time allows freq. to gradually increase or decrease), but 1 means it stays samee
@@ -389,56 +321,6 @@ UpdateKeys:
 .knownret
 	ret
 
-;MoveBallFromOpponent:
-;	ld a, [OpponentCaughtBall]
-;	cp a, 1
-;	jp z, CheckReady
-;	ld a, [OpponentBallThrown]
-;	cp a, 1
-;	jp z, CheckReady
-;	ret
-
-;CheckReady:
-;	ld a, [OpponentMoveWithBallPeriod]
-;	cp a, 1			; needs to be one as it is one elsewhere
-;	jp z, ActualMoveBallFromOpponent
-;	ret
-
-;ActualMoveBallFromOpponent:
-	; reset OpponentCaughtBall so that BallMoveWithOpponent no longer keeps ball stuck to opponent
-;	ld a, 0
-	;ld  [OpponentCaughtBall], a
-
-	; now add check to see if it has hit lower wall, if it has jp to HitWall
-;	ld a, [_OAMRAM + 4]
-	;cp a, 150		; used to be 150
-	;jp c, HitLowerWall
-	;jp z, HitLowerWall
-	
-	; now check to see if it has hit the opponent, if it has jp to HitOpponent
-	;ld a, [_OAMRAM+8]	; y coord of opponent in a
-;	ld b, a			; y coord of opponent in b
-;	ld a, [_OAMRAM+4]	; y coord of ball in a
-	; for ease of programming, test that they are equal only
-	;cp a, b
-	;jp nz, CanMoveBallFromOpponent		; if the y coords of ball and opponent are not equal, go to CanMove
-
-	;ld a, [_OAMRAM+9]	; x coord of opponent in a
-;	ld b, a			; x coord of opponent in b
-	;ld a, [_OAMRAM+5]	; x coord of ball in a
-	;cp a, b
-	;jp z, HitPlayer	; if zero flag is set, x coords are equal, so we jp to HitOpponent
-
-
-;CanMoveBallFromOpponent:	
-;	ld a, [_OAMRAM + 4]
-;	inc a
-	;;add a, 2
-;	ld [_OAMRAM + 4], a
-	;ld a, 1
-;	ld [OpponentBallThrown], a
-
-;	ret
 
 HitLowerWall:
 	ret
@@ -469,7 +351,6 @@ MoveBallFromPlayer:
 	ld b, a			; x coord of opponent in b
 	ld a, [_OAMRAM+5]	; x coord of ball in a
 	cp a, b
-;	jp z, HitOpponent	; if zero flag is set, x coords are equal, so we jp to HitOpponent
 
 
 CanMove:	
@@ -493,51 +374,6 @@ HitWall:
 
 	ret
 
-;HitOpponent:
-	; if the ball has hit the opponent, we don't move it up
-	; and we set the PlayerBallThrown flag to 0
-;	ld a, 0
-	;ld [PlayerBallThrown], a
-	;ld a, 1
-	;ld [BallHitOpponent], a	; set flag for BallHitOpponent to 1, so that when we call the Opponent catch routine from main, the opponent will move to catch the ball
-	;call BounceOffOpponent
-
-;	ld a, $4
-	;ld [$FF10], a		; set sweep time to 4 (sweep time allows freq. to gradually increase or decrease), but 1 means it stays samee
-	;ld a, $4
-	;ld [$FF11], a		; set length of sound
-	;ld a, $A1
-	;ld [$FF12], a		; volume and how volume changes
-	;ld a, $5
-	;ld [$FF13], a		; set frequency
-	;ld a, $C3
-	;ld [$FF14], a		; playback length for sound (not sure how this differs from usual length)
-
-	;ret
-
-
-;BounceOffOpponent:
-	;ld a, [_OAMRAM + 4]	; y coord of ball is in a
-	;add a, 10		; we want the ball to move down screen after hitting opponent
-	;ld [_OAMRAM + 4], a
-	; change x coord of ball too
-;	ld a, [_OAMRAM + 5]	; x coord of ball is in a
-;	add a, 3
-;	ld [_OAMRAM + 5], a
-	
-	;ret
-
-;OpponentMoveToCatchStationaryBall: ; this must run from main regardless, use flags to determine whether code is executed
-	;ld a, [BallHitOpponent]
-	;cp a, 1
-	;jp z, ActualOpponentMove
-	;ret
-	
-;ActualOpponentMove:	
-;	ld a, [OpponentStationaryCatchCounter]
-;	cp a, 4
-;	jp c, DoMove	; might be due to frame timer, maybe use c to compare greater than, rather than equality
-;	jp NoMoreMove
 
 DoMove:
 	; if x coord exceeds 100, moveRight flag set to 0
@@ -576,7 +412,6 @@ BeginMovement:
 	ld a, [_OAMRAM + 9]	; x coord opponent
 	add a, 10
 	ld [_OAMRAM + 9], a
-;	jp AfterMovement
 
 LeftMovement:
 
@@ -584,71 +419,6 @@ LeftMovement:
 	sub a, 10
 	ld [_OAMRAM + 9], a
 
-	; check right wall
-;	ld a, [_OAMRAM + 9]
-;	cp a, 100
-;	jp nc, MoveOpponentToLeft
-;	add a, 10
-;	ld [_OAMRAM + 9], a
-
-;AfterMovement:
-	
-;	ld a, [OpponentStationaryCatchCounter]
-;	inc a
-;	ld [OpponentStationaryCatchCounter], a ; need to load new value back in
-;	ld a, 1
-;	ld [OpponentCaughtBall], a
-;	ret
-
-;MoveOpponentToLeft:
-;	sub a, 10
-	;ld [_OAMRAM + 9], a
-	;ret
-;NoMoreMove:		 ; this code is never run
-	;; opponent has now caught the stationary ball
-	;ld a, 1
-	;ld [OpponentCaughtBall], a ; so when we call ball move with opponent, from main, it will actually keep the ball with the opponent
-	;ld a, 0
-	;ld [BallHitOpponent], a
-	;ret
-
-;BallMoveWithOpponent:
-	; need code in main that checks the OpponentStationaryCatchCounter, and runs this code if it is 8
-	;ld a, [OpponentBallThrown]
-	;cp a, 1
-;	jp nz, LastOfBMWO
-;	ld a, [OpponentCaughtBall]
-	;cp a, 1
-	;jp nz, LastOfBMWO
-	;ld a, [_OAMRAM + 9] 	; x coord of opponent in a
-	;ld [_OAMRAM + 5], a	; opponent and ball have same x coord
-	;ld a, [_OAMRAM + 8]	; y coord of opponent in A
-	;add a, 5
-	;ld [_OAMRAM + 4], a	; y coord of ball is 5 more than opponent
-;	ld a, 0
-;	ld [OpponentCaughtBall], a
-;;	call OpponentMoveWithBall ; might be better having this in main and make it run for a few frames
-;LastOfBMWO:
-	
-	;ret
-
-;OpponentMoveWithBall:
-	;ld a, [OpponentCaughtBall]
-	;cp a, 1
-	;jp z, MoveOpponent
-	;ret
-
-
-;MoveOpponent:
-	; check opp mov w ball per, if not 1, exit
-;	ld a, [OpponentMoveWithBallPeriod]
-;	cp a, 1
-;	jp z, ReadyMove
-;	ld a, [OpponentMoveWithBallPeriod]
-;	inc a
-;	ld [OpponentMoveWithBallPeriod], a
-;	ret
-	
 	
 ReadyMove:
 	ld a, [MoveRight]
@@ -665,17 +435,7 @@ ReadyMove:
 	add a, 5
 	ld [_OAMRAM + 9], a
 
-	
 
-
-	;ld a, [OpponentMoveWithBallPeriod]
-	;inc a
-	;ld [OpponentMoveWithBallPeriod], a
-	;ld a, [ReadyToThrow]
-	;inc a
-	
-	
-	;ret
 
 MoveLeft:
 	ld a, 0
@@ -684,59 +444,9 @@ MoveLeft:
 	
 	ld a, [_OAMRAM + 9]	; x pos of opponent is in a
 	cp a, 10
-	jp nc, ActualMoveLeft
 	ld a, 1
 	ld [MoveRight], a
 	ret
-
-ActualMoveLeft:
-;	sub a, 5
-
-	; test for left wall if it hits left wall, switch MoveRight flag back to 1 and return
-
-;	ld a, [OpponentMoveWithBallPeriod]
-;	inc a
-;	ld [OpponentMoveWithBallPeriod], a
-;	ld a, [ReadyToThrow]
-;	inc a
-	
-	
-;	ret
-
-	; create a function BallThrownMovement that moves ball depending on who threw it and whether the ball has hit a wall yet, or player
-
-	; splits into player thrown and opponent thrown
-
-BallThrownMovement:
-	; check flags to see who, if anyone, threw the ball
-;	ld a, [PlayerBallThrown]
-;	cp a, 1
-;	jp nz, OpponentThrown	; if zero flag not set, a does not equal 1, so we must check if Opponent threw ball
-	; else move ball towards the wall opposite the player
-	; switch off playerballthrown flag
-;	call SwitchOffPlayerBallThrownFlag
-	
-	; check to see if ball has reached wall yet
-;	ld a, [_OAMRAM+4]	; y coord of ball in a
-;	cp a, 15		; if a is less than or equal to 15, go back to main
-;	jp c, Main ; ball hit the wall
-;	jp MoveBallUp			    ; if ball did not hit wall, then jmp to MoveBallUp
-SwitchOffPlayerBallThrownFlag:
-;	ld a, 0
-;	ld [PlayerBallThrown], a
-	; ret this ret might have caused an overflow of some sort
-	;	jp Main
-;	ret
-	
-MoveBallUp:
-	; else decrement y coord of ball to move ball upwards
-;	dec a
-;	ld [_OAMRAM+4], a	; y coord of ball changed to move towards top wall
-;	ret			; added recently
-	
-
-OpponentThrown:
-	jp Main
 	
 	; copy data from one memory location to another
 	; de: Source
@@ -778,16 +488,6 @@ Ball:
     dw `00000000
 BallEnd:
 
-;Opponent:
- ;   dw `33333333
- ;;   dw `30000003
-  ;  dw `33333333
- ;   dw `00000000
- ;   dw `00000000
-  ;  dw `00000000
-  ;  dw `00000000
- ;   dw `00000000
-;OpponentEnd:
 
 Tiles:
 
@@ -1090,10 +790,5 @@ CurKeys: db
 NewKeys: db
 BallCaught: db
 PlayerBallThrown: db
-;OpponentBallThrown: db
-;BallHitOpponent: db
-;OpponentCaughtBall: db
-;OpponentStationaryCatchCounter: db
-;OpponentMoveWithBallPeriod: db
 ReadyToThrow: db
 MoveRight: db
