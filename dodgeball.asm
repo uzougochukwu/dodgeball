@@ -232,14 +232,38 @@ CheckCatchY:
 	; maybe jp Throw is better, this is not the same as the left, right, up down checks
 	
 
+;	TODO-1: provide tolerance for X catch -> the player should not have to perfectly line up with the x coord of the ball in order to catch!
+; have separate checkcatchx routine for when a > b and for when b > a
 CheckCatchX:
+; cp a, b does a - b
+
+
 	ld a, [_OAMRAM + 5]	; x coord of ball in a
 	ld b, a			; x coord of ball in b
 	ld a, [_OAMRAM + 1]	; x coord of player in a
-	cp a, b			; will have to check for a = b, otherwise we run into negatives
-	jp nz, CheckThrow		; if the x coords dont line up, can't catch, back to Main - maybe change to CheckThrow
-	
+	; check whether a or b is greater
+	cp a, b
+	jp c, CheckCatchXNegResult ; if carry flag is set, that means that a < b
+	sub a, b				; so at this point we know that a > b
+	cp a, 10				; if the carry flag is set, then a < 10 which means the player's x coord is close enough to catch
+	jp nc, CheckThrow		; if the carry flag is not set then x coords aren't close enough, can't catch, back to CheckThrow
+	jp ActualCheckCatch		; to make sure that the catch sound can potentially be played, since the player is close enough to catch			
 
+CheckCatchXNegResult:
+; so we know that x-player < x-ball
+; so load the coords in the other register, have x coord of ball in a and x coord of player in b
+; this ensures that once again, a is actually greater than b
+	ld a, [_OAMRAM + 1] ; x coord of player in a
+	ld b, a 			; x coord of player in b
+	ld a, [_OAMRAM + 5] ; x coord of ball in a 
+	sub a, b
+	cp a, 10				; if the carry flag is set, then a < 10 which means the player's x coord is close enough to catch
+	jp nc, CheckThrow		; if the carry flag is not set then x coords aren't close enough, can't catch, back to CheckThrow
+	jp ActualCheckCatch		; to make sure that the catch sound can potentially be played, since the player is close enough to catch	
+
+
+	
+; designed to play the catch sound
 ActualCheckCatch:
 	
 	ld a, [CurKeys]
