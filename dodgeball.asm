@@ -14,6 +14,7 @@ SECTION "Header", ROM0[$100]
 	ld [NewKeys], a
 	ld [BallCaught], a
 	ld [PlayerBallThrown], a
+	ld [RandomNumber], a
 
 	ld [ReadyToThrow], a
 	ld a, 1
@@ -47,7 +48,10 @@ WaitForvBlank:
 	ld hl, $9800
 	ld bc, TilemapEnd - Tilemap ; amount of memory needed
 	call Memcpy
-	
+
+	; creating the RandomNumber variable
+	ld a, [_OAMRAM]
+	ld [RandomNumber], a
 
 	; clearing object attribute memory (OAM)
 
@@ -108,6 +112,8 @@ ClearOam:
 	ld a, 10 + 16
 	ld [hli], a
 	ld a, 57 + 8
+	;ld a, [RandomNumber]
+	;add a, 8
 	ld [hli], a 
 	ld a, 2
 	ld [hli], a 
@@ -765,3 +771,4 @@ BallCaught: db
 PlayerBallThrown: db
 ReadyToThrow: db
 MoveRight: db
+RandomNumber: db
