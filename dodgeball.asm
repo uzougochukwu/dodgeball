@@ -69,6 +69,12 @@ WaitForvBlank:
 	ld bc, BallEnd - Ball
 	call Memcpy
 
+	; copy the opponent tiles
+	ld de, Opponent
+	ld hl, $8020
+	ld bc, OpponentEnd - Opponent
+	call Memcpy
+
 
 ClearOam:
 	ld [hli], a
@@ -94,6 +100,17 @@ ClearOam:
 	ld [hli], a
 	ld a, 1			; tile ID is 1
 	ld [hli], a
+	ld a, 0
+	ld [hli], a
+
+	; create opponent
+	ld hl, _OAMRAM + 8
+	ld a, 10 + 16
+	ld [hli], a
+	ld a, 57 + 8
+	ld [hli], a 
+	ld a, 2
+	ld [hli], a 
 	ld a, 0
 	ld [hli], a
 
@@ -397,7 +414,7 @@ HitWall:
 	ld [PlayerBallThrown], a
 
 	ret
-	
+
 Memcpy:
 	ld a, [de]
 	ld [hli], a 		; hli means that after access, hl is incremented
@@ -434,6 +451,16 @@ Ball:
     dw `00000000
 BallEnd:
 
+Opponent:
+    dw `11111111
+    dw `11133111
+    dw `11111111
+    dw `00000000
+    dw `00000000
+    dw `00000000
+    dw `00000000
+    dw `00000000
+OpponentEnd:
 
 Tiles:
 
