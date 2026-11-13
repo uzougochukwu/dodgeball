@@ -86,7 +86,6 @@ ClearOam:
 	jp nz, ClearOam		; clear memory until index, b, is 0
 
 	; create player controlled character (one 8x8 sprite)
-
 	ld hl, _OAMRAM
 	ld a, 128 + 16 		; y coordinate is 128, stored at an offset of 16 in memory
 	ld [hli], a
@@ -111,9 +110,9 @@ ClearOam:
 	ld hl, _OAMRAM + 8
 	ld a, 10 + 16
 	ld [hli], a
-	ld a, 57 + 8
-	;ld a, [RandomNumber]
-	;add a, 8
+	;ld a, 57 + 8
+	ld a, [RandomNumber]
+	add a, 8
 	ld [hli], a 
 	ld a, 2
 	ld [hli], a 
@@ -149,7 +148,7 @@ WaitForvBlank2:
 	; check the keys each frame and move left or right
 	call UpdateKeys
 
-
+	call OpponentMove
 
 	call MoveBallFromPlayer
 
@@ -402,15 +401,28 @@ MoveBallFromPlayer:
 
 CanMove:	
 	ld a, [_OAMRAM + 4]
-		dec a
+	dec a
 	;sub a, 2
 	ld [_OAMRAM + 4], a
-	
-
 	ret
 
+OpponentMove:
+	ld a, [RandomNumber]   ; the RandomNumber tells us which movement routine the opponent will follow	
+	cp a, 127
+	jp c, SecondOpponentRoutine  ; if the carry flag is set then a is < 127
+	ld a, [_OAMRAM + 8]
+	add a, 1
+	ld [_OAMRAM + 8], a
+	ret 
+
+SecondOpponentRoutine:
+	ld a, [_OAMRAM + 8]		; y coord of opponent
+	sub a, 1
+	ld [_OAMRAM + 8], a
+	ret
+
+
 NotThrown:	
-	
 	ret
 
 HitWall:
@@ -418,7 +430,6 @@ HitWall:
 	; and we set the PlayerBallThrown flag to 0
 	ld a, 0
 	ld [PlayerBallThrown], a
-
 	ret
 
 Memcpy:
