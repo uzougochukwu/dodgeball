@@ -117,9 +117,9 @@ ClearOam:
 	;ld a, 57 + 8
 	ld a, [RandomNumber]
 	add a, 8
-	cp a, 113 ; make sure that the opponent does not cross the right hand wall 
+	cp a, 73 ; make sure that the opponent is 40 away from right wall
 	jp c, OpponentIsLeftOfRightWall ; if carry flag is set it means that the opponent x coord is < than the x coord of right wall
-	ld a, 113
+	ld a, 73
 
 OpponentIsLeftOfRightWall:
 
@@ -453,7 +453,7 @@ DecreaseMovementPeriod:
 	ld [MovementPeriod], a
 	ret 
 
-; when movement period reaches 0, we then continuosly run the code below
+; when movement period reaches 0, we then continuously run the code below
 FirstReverse:
 
 	ld a, [_OAMRAM + 8]		; y coord of opponent
@@ -467,7 +467,7 @@ FirstReverse:
 	ld a, [MovementPeriod]
 	cp a, 30
 	jp nz, IncreaseMovementPeriod
-	ld a, 0					; if zero flag, then MovementPeriod is 40, so we can now do our original routine and set Reverse flag back to 0
+	ld a, 0					; if zero flag, then MovementPeriod is 30, so we can now do our original routine and set Reverse flag back to 0
 	ld [Reverse], a
 	ret
 IncreaseMovementPeriod:	
@@ -475,15 +475,52 @@ IncreaseMovementPeriod:
 	ld [MovementPeriod], a
 	ret 
 
-
-
 SecondOpponentRoutine:
+
+	ld a, [Reverse]
+	cp a, 1
+	jr z, SecondReverse
+
+	; as MovementPeriod decreases to 0, we run the code below over and over
 	ld a, [_OAMRAM + 8]		; y coord of opponent
 	dec a
 	ld [_OAMRAM + 8], a
 	ld a, [_OAMRAM + 9]		; x coord of opponent
 	inc a
 	ld [_OAMRAM + 9], a
+
+	ld a, [MovementPeriod]
+	cp a, 0
+	jp nz, SecondDecreaseMovementPeriod
+	ld a, 1
+	ld [Reverse], a			; MovementPeriod is now 0, so we set the Reverse flag to 1
+	ret
+
+SecondDecreaseMovementPeriod:
+	dec a 
+	ld [MovementPeriod], a 
+	ret
+
+; when MovementPeriod reaches 0, we then continuously run the code below 
+SecondReverse:
+	ld a, [_OAMRAM + 8]
+	inc a 
+	ld [_OAMRAM + 8], a
+	ld a, [_OAMRAM + 9]
+	dec a
+	ld [_OAMRAM + 9], a
+
+; check whether we can increase the MovementPeriod
+	ld a, [MovementPeriod]
+	cp a, 30
+	jp nz, SecondIncreaseMovementPeriod
+	ld a, 0   ; if zero flag is set, then MovementPeriod is 30 and we can now do our original SecondOpponentRoutine and set Reverse flag to 0
+	ld [Reverse], a
+	ret
+
+SecondIncreaseMovementPeriod:
+	inc a 
+	ld [MovementPeriod], a 
 	ret
 
 
