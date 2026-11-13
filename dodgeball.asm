@@ -113,6 +113,11 @@ ClearOam:
 	;ld a, 57 + 8
 	ld a, [RandomNumber]
 	add a, 8
+	cp a, 113 ; make sure that the opponent does not cross the right hand wall 
+	jp c, OpponentIsLeftOfRightWall ; if carry flag is set it means that the opponent x coord is < than the x coord of right wall
+	ld a, 113
+
+OpponentIsLeftOfRightWall:
 	ld [hli], a 
 	ld a, 2
 	ld [hli], a 
@@ -374,7 +379,6 @@ HitLowerWall:
 HitPlayer:
 	ret
 	
-
 MoveBallFromPlayer:
 	ld a, [PlayerBallThrown]
 	cp a, 1
