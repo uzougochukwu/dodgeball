@@ -15,10 +15,14 @@ SECTION "Header", ROM0[$100]
 	ld [BallCaught], a
 	ld [PlayerBallThrown], a
 	ld [RandomNumber], a
+	ld [Reverse], a
+	
 
 	ld [ReadyToThrow], a
 	ld a, 1
 	ld [MoveRight], a
+	ld a, 30
+	ld [MovementPeriod], a
 	
 	
 
@@ -118,6 +122,14 @@ ClearOam:
 	ld a, 113
 
 OpponentIsLeftOfRightWall:
+
+	; now do the check to make sure opponent is right of the left hand wall
+	cp a, 7
+	jp nc, LoadOpponentX
+	ret
+
+LoadOpponentX:
+	; now we can load the opponent location into memory
 	ld [hli], a 
 	ld a, 2
 	ld [hli], a 
@@ -414,15 +426,64 @@ OpponentMove:
 	ld a, [RandomNumber]   ; the RandomNumber tells us which movement routine the opponent will follow	
 	cp a, 127
 	jp c, SecondOpponentRoutine  ; if the carry flag is set then a is < 127
-	ld a, [_OAMRAM + 8]
-	add a, 1
+
+	ld a, [Reverse]		; this is a flag that tells us whether or not we need to switch movement
+	cp a, 1
+	jr z, FirstReverse
+	;dec a 
+	;ld [MovementPeriod], a
+
+; as movement period decreases from 40 to 0, the code below will run
+	ld a, [_OAMRAM + 8]		; y coord of opponent
+	inc a
 	ld [_OAMRAM + 8], a
+	ld a, [_OAMRAM + 9]		; x coord of opponent
+	dec a
+	ld [_OAMRAM + 9], a
+	
+	ld a, [MovementPeriod]
+	cp a, 0
+	jp nz, DecreaseMovementPeriod
+	ld a, 1
+	ld [Reverse], a							; MovementPeriod is now 0, so we set the reverse flag to 1
+	ret
+
+DecreaseMovementPeriod:	
+	dec a
+	ld [MovementPeriod], a
 	ret 
+
+; when movement period reaches 0, we then continuosly run the code below
+FirstReverse:
+
+	ld a, [_OAMRAM + 8]		; y coord of opponent
+	dec a
+	ld [_OAMRAM + 8], a
+	ld a, [_OAMRAM + 9]		; x coord of opponent
+	inc a
+	ld [_OAMRAM + 9], a
+
+; check whether we can increase MovementPeriod
+	ld a, [MovementPeriod]
+	cp a, 30
+	jp nz, IncreaseMovementPeriod
+	ld a, 0					; if zero flag, then MovementPeriod is 40, so we can now do our original routine and set Reverse flag back to 0
+	ld [Reverse], a
+	ret
+IncreaseMovementPeriod:	
+	inc a 
+	ld [MovementPeriod], a
+	ret 
+
+
 
 SecondOpponentRoutine:
 	ld a, [_OAMRAM + 8]		; y coord of opponent
-	sub a, 1
+	dec a
 	ld [_OAMRAM + 8], a
+	ld a, [_OAMRAM + 9]		; x coord of opponent
+	inc a
+	ld [_OAMRAM + 9], a
 	ret
 
 
@@ -748,8 +809,6 @@ Tiles:
 	dw `11111110
 	
 
-
-
 TilesEnd:
 
 
@@ -787,3 +846,5 @@ PlayerBallThrown: db
 ReadyToThrow: db
 MoveRight: db
 RandomNumber: db
+MovementPeriod: db
+Reverse: db
