@@ -92,9 +92,9 @@ ClearOam:
 
 	; create player controlled character (one 8x8 sprite)
 	ld hl, _OAMRAM
-	ld a, 144 		; y coordinate is 128, stored at an offset of 16 in memory
+	ld a, 158 		; y coordinate is 128, stored at an offset of 16 in memory
 	ld [hli], a
-	ld a, 61		; x coordinate is 53, stored at an offset of 8 in memory
+	ld a, 75		; x coordinate is 53, stored at an offset of 8 in memory
 	ld [hli], a
 	ld a, 0			; tile id 0
 	ld [hli], a
@@ -104,7 +104,7 @@ ClearOam:
 	ld hl, _OAMRAM + 4
 	ld a, 95		; y coord is 79, middle of screen
 	ld [hli], a
-	ld a, 65		; x coord is 57, middle of screen
+	ld a, 75		; x coord is 57, middle of screen
 	ld [hli], a
 	ld a, 1			; tile ID is 1
 	ld [hli], a
@@ -113,9 +113,9 @@ ClearOam:
 
 	; create opponent
 	ld hl, _OAMRAM + 8
-	ld a, 80
+	ld a, 30
 	ld [hli], a
-	ld a, 65
+	ld a, 75
 	ld [hli], a
 	ld a, 0
 	ld [hli], a
