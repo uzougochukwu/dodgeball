@@ -21,7 +21,7 @@ SECTION "Header", ROM0[$100]
 	ld [ReadyToThrow], a
 	ld a, 1
 	ld [MoveRight], a
-	ld a, 30
+	ld a, 5
 	ld [MovementPeriod], a
 	
 	
@@ -91,9 +91,9 @@ ClearOam:
 
 	; create player controlled character (one 8x8 sprite)
 	ld hl, _OAMRAM
-	ld a, 128 + 16 		; y coordinate is 128, stored at an offset of 16 in memory
+	ld a, 144 		; y coordinate is 128, stored at an offset of 16 in memory
 	ld [hli], a
-	ld a, 53 + 8		; x coordinate is 53, stored at an offset of 8 in memory
+	ld a, 61		; x coordinate is 53, stored at an offset of 8 in memory
 	ld [hli], a
 	ld a, 0			; tile id 0
 	ld [hli], a
@@ -101,9 +101,9 @@ ClearOam:
 
 	; create ball (one 8x8 sprite)
 	ld hl, _OAMRAM + 4
-	ld a, 79 + 16		; y coord is 79, middle of screen
+	ld a, 95		; y coord is 79, middle of screen
 	ld [hli], a
-	ld a, 57 + 8		; x coord is 57, middle of screen
+	ld a, 65		; x coord is 57, middle of screen
 	ld [hli], a
 	ld a, 1			; tile ID is 1
 	ld [hli], a
@@ -112,29 +112,36 @@ ClearOam:
 
 	; create opponent
 	ld hl, _OAMRAM + 8
-	ld a, 10 + 16
+	ld a, 56
 	ld [hli], a
-	;ld a, 57 + 8
-	ld a, [RandomNumber]
-	add a, 8
-	cp a, 73 ; make sure that the opponent is 40 away from right wall
-	jp c, OpponentIsLeftOfRightWall ; if carry flag is set it means that the opponent x coord is < than the x coord of right wall
-	ld a, 73
-
-OpponentIsLeftOfRightWall:
-
-	; now do the check to make sure opponent is right of the left hand wall
-	cp a, 7
-	jp nc, LoadOpponentX
-	ret
-
-LoadOpponentX:
-	; now we can load the opponent location into memory
-	ld [hli], a 
-	ld a, 2
-	ld [hli], a 
+	ld a, 65
+	ld [hli], a
 	ld a, 0
 	ld [hli], a
+	ld [hli], a	
+
+
+	;ld a, [RandomNumber]
+	;add a, 8
+	;cp a, 73 ; make sure that the opponent is 40 away from right wall
+	;jp c, OpponentIsLeftOfRightWall ; if carry flag is set it means that the opponent x coord is < than the x coord of right wall
+	;ld a, 73
+
+;OpponentIsLeftOfRightWall:
+
+	; now do the check to make sure opponent is 20 away from left hand wall
+	;cp a, 27
+	;jp nc, LoadOpponentX
+	;ret
+
+;LoadOpponentX:
+	; now we can load the opponent location into memory
+	;ld [hli], a 	; location
+	;ld a, 2
+	;ld [hli], a 	; tile id
+	;ld a, 0
+	;ld [hli], a
+	;ld [hli], a
 
 
 	; turn on LCD screen, with objects enabled
@@ -430,10 +437,11 @@ OpponentMove:
 	ld a, [Reverse]		; this is a flag that tells us whether or not we need to switch movement
 	cp a, 1
 	jr z, FirstReverse
+
 	;dec a 
 	;ld [MovementPeriod], a
 
-; as movement period decreases from 40 to 0, the code below will run
+; as movement period decreases from 30 to 0, the code below will run
 	ld a, [_OAMRAM + 8]		; y coord of opponent
 	inc a
 	ld [_OAMRAM + 8], a
@@ -443,7 +451,7 @@ OpponentMove:
 	
 	ld a, [MovementPeriod]
 	cp a, 0
-	jp nz, DecreaseMovementPeriod
+	jp nz, DecreaseMovementPeriod 
 	ld a, 1
 	ld [Reverse], a							; MovementPeriod is now 0, so we set the reverse flag to 1
 	ret
@@ -465,25 +473,26 @@ FirstReverse:
 
 ; check whether we can increase MovementPeriod
 	ld a, [MovementPeriod]
-	cp a, 30
+	cp a, 5
 	jp nz, IncreaseMovementPeriod
 	ld a, 0					; if zero flag, then MovementPeriod is 30, so we can now do our original routine and set Reverse flag back to 0
 	ld [Reverse], a
 	ret
+
 IncreaseMovementPeriod:	
 	inc a 
 	ld [MovementPeriod], a
 	ret 
 
-SecondOpponentRoutine:
 
+SecondOpponentRoutine:
 	ld a, [Reverse]
 	cp a, 1
 	jr z, SecondReverse
 
 	; as MovementPeriod decreases to 0, we run the code below over and over
 	ld a, [_OAMRAM + 8]		; y coord of opponent
-	dec a
+	inc a
 	ld [_OAMRAM + 8], a
 	ld a, [_OAMRAM + 9]		; x coord of opponent
 	inc a
@@ -504,15 +513,15 @@ SecondDecreaseMovementPeriod:
 ; when MovementPeriod reaches 0, we then continuously run the code below 
 SecondReverse:
 	ld a, [_OAMRAM + 8]
-	inc a 
+	dec a 
 	ld [_OAMRAM + 8], a
 	ld a, [_OAMRAM + 9]
 	dec a
 	ld [_OAMRAM + 9], a
 
-; check whether we can increase the MovementPeriod
+; check whether we can increase the MovementPeriod 
 	ld a, [MovementPeriod]
-	cp a, 30
+	cp a, 5
 	jp nz, SecondIncreaseMovementPeriod
 	ld a, 0   ; if zero flag is set, then MovementPeriod is 30 and we can now do our original SecondOpponentRoutine and set Reverse flag to 0
 	ld [Reverse], a
