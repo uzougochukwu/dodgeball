@@ -65,7 +65,6 @@ WaitForvBlank:
 	ld hl, _OAMRAM		; load the start address of OAM into hl
 
 
-	
 	; copy the player tiles
 	ld de, PlayerCharacter
 	ld hl, $8000
@@ -86,6 +85,7 @@ WaitForvBlank:
 
 
 ClearOam:
+	ld a, 0
 	ld [hli], a
 	dec b
 	jp nz, ClearOam		; clear memory until index, b, is 0
