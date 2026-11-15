@@ -275,7 +275,7 @@ CheckCatchY:
 	; if a is less than 10, the c flag is set
 	; if c flag set, we want to continue with the check
 	jp c, CheckCatchX
-	jp CheckThrow		; but if c not set, c greater than or equal to 10, so we want to exit the CheckCatch and go back to main 
+	jp Main		; but if c not set, c greater than or equal to 10, so we want to exit the CheckCatch and go back to main 
 	; maybe jp Throw is better, this is not the same as the left, right, up down checks
 	
 
@@ -293,7 +293,7 @@ CheckCatchX:
 	jp c, CheckCatchXNegResult ; if carry flag is set, that means that a < b
 	sub a, b				; so at this point we know that a > b
 	cp a, 10				; if the carry flag is set, then a < 10 which means the player's x coord is close enough to catch
-	jp nc, CheckThrow		; if the carry flag is not set then x coords aren't close enough, can't catch, back to CheckThrow
+	jp nc, Main		; if the carry flag is not set then x coords aren't close enough, can't catch, back to CheckThrow
 	jp ActualCheckCatch		; to make sure that the catch sound can potentially be played, since the player is close enough to catch			
 
 CheckCatchXNegResult:
@@ -305,7 +305,7 @@ CheckCatchXNegResult:
 	ld a, [_OAMRAM + 5] ; x coord of ball in a 
 	sub a, b
 	cp a, 10				; if the carry flag is set, then a < 10 which means the player's x coord is close enough to catch
-	jp nc, CheckThrow		; if the carry flag is not set then x coords aren't close enough, can't catch, back to CheckThrow
+	jp nc, Main		; CheckThrow is the sequence that actually makes the ball move, so if carry flag is not set then a > 10, so we need to jump to main
 	jp ActualCheckCatch		; to make sure that the catch sound can potentially be played, since the player is close enough to catch	
 
 
