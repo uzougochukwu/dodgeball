@@ -16,11 +16,12 @@ SECTION "Header", ROM0[$100]
 	ld [PlayerBallThrown], a
 	ld [RandomNumber], a
 	ld [Reverse], a
-	
+	ld [MoveAlternate], a
 
 	ld [ReadyToThrow], a
 	ld a, 1
 	ld [MoveRight], a
+	ld [MoveAlternate], a
 	ld a, 5
 	ld [MovementPeriod], a
 	
@@ -112,7 +113,7 @@ ClearOam:
 
 	; create opponent
 	ld hl, _OAMRAM + 8
-	ld a, 56
+	ld a, 80
 	ld [hli], a
 	ld a, 65
 	ld [hli], a
@@ -441,6 +442,11 @@ OpponentMove:
 	;dec a 
 	;ld [MovementPeriod], a
 
+	; check the MoveAlternate flag
+	ld a, [MoveAlternate]
+	cp a, 1
+	jr nz, InitialMovementPeriod	; if the zero flag is set, MoveAlternate is 1, so we run the movement code
+
 ; as movement period decreases from 30 to 0, the code below will run
 	ld a, [_OAMRAM + 8]		; y coord of opponent
 	inc a
@@ -448,21 +454,30 @@ OpponentMove:
 	ld a, [_OAMRAM + 9]		; x coord of opponent
 	dec a
 	ld [_OAMRAM + 9], a
+
+InitialMovementPeriod:	
 	
 	ld a, [MovementPeriod]
 	cp a, 0
 	jp nz, DecreaseMovementPeriod 
 	ld a, 1
 	ld [Reverse], a							; MovementPeriod is now 0, so we set the reverse flag to 1
-	ret
+	jp EndOpponentMove
+	;ret
 
 DecreaseMovementPeriod:	
 	dec a
 	ld [MovementPeriod], a
-	ret 
+	jp EndOpponentMove
+	;ret 
 
 ; when movement period reaches 0, we then continuously run the code below
 FirstReverse:
+
+	; check the MoveAlternate flag
+	ld a, [MoveAlternate]
+	cp a, 1
+	jr nz, FirstMovementPeriod
 
 	ld a, [_OAMRAM + 8]		; y coord of opponent
 	dec a
@@ -472,23 +487,33 @@ FirstReverse:
 	ld [_OAMRAM + 9], a
 
 ; check whether we can increase MovementPeriod
+
+FirstMovementPeriod:
 	ld a, [MovementPeriod]
 	cp a, 5
 	jp nz, IncreaseMovementPeriod
 	ld a, 0					; if zero flag, then MovementPeriod is 30, so we can now do our original routine and set Reverse flag back to 0
 	ld [Reverse], a
-	ret
+	jr EndOpponentMove
+	;ret
 
 IncreaseMovementPeriod:	
 	inc a 
 	ld [MovementPeriod], a
-	ret 
+	jr EndOpponentMove
+	;ret 
 
 
 SecondOpponentRoutine:
 	ld a, [Reverse]
 	cp a, 1
 	jr z, SecondReverse
+
+	; check the MoveAlternate flag 
+	ld a, [MoveAlternate]
+	cp a, 1
+	jr nz, SecondMovementPeriod
+
 
 	; as MovementPeriod decreases to 0, we run the code below over and over
 	ld a, [_OAMRAM + 8]		; y coord of opponent
@@ -498,20 +523,29 @@ SecondOpponentRoutine:
 	inc a
 	ld [_OAMRAM + 9], a
 
+SecondMovementPeriod:
 	ld a, [MovementPeriod]
 	cp a, 0
 	jp nz, SecondDecreaseMovementPeriod
 	ld a, 1
 	ld [Reverse], a			; MovementPeriod is now 0, so we set the Reverse flag to 1
-	ret
+	jr EndOpponentMove
+	;ret
 
 SecondDecreaseMovementPeriod:
 	dec a 
 	ld [MovementPeriod], a 
-	ret
+	jr EndOpponentMove
+	;ret
 
 ; when MovementPeriod reaches 0, we then continuously run the code below 
 SecondReverse:
+	; check the MoveAlternate flag 
+	ld a, [MoveAlternate]
+	cp a, 1
+	jr nz, FinalMovementPeriod
+
+
 	ld a, [_OAMRAM + 8]
 	dec a 
 	ld [_OAMRAM + 8], a
@@ -519,17 +553,34 @@ SecondReverse:
 	dec a
 	ld [_OAMRAM + 9], a
 
+
+FinalMovementPeriod:
 ; check whether we can increase the MovementPeriod 
 	ld a, [MovementPeriod]
 	cp a, 5
 	jp nz, SecondIncreaseMovementPeriod
 	ld a, 0   ; if zero flag is set, then MovementPeriod is 30 and we can now do our original SecondOpponentRoutine and set Reverse flag to 0
 	ld [Reverse], a
-	ret
+	jr EndOpponentMove
+	;ret
 
 SecondIncreaseMovementPeriod:
 	inc a 
 	ld [MovementPeriod], a 
+	jr EndOpponentMove
+	;ret
+
+EndOpponentMove:
+	ld a, [MoveAlternate]	
+	cp a, 1
+	jr z, SwitchOneToZero	; if the zero flag is set, then MoveAlternate is 1, so we need to switch that to 0
+	ld a, 1					; if the zero flag is not set, then MoveAlternate is 0, so we need to switch that to 1
+	ld [MoveAlternate], a
+	ret
+
+SwitchOneToZero:
+	ld a, 0
+	ld [MoveAlternate], a
 	ret
 
 
@@ -580,9 +631,9 @@ Ball:
 BallEnd:
 
 Opponent:
-    dw `11111111
-    dw `11133111
-    dw `11111111
+    dw `03000030
+    dw `10011001
+    dw `10030001
     dw `00000000
     dw `00000000
     dw `00000000
@@ -620,14 +671,14 @@ Tiles:
 	dw `00000000
 	dw `00000000
 
-	dw `33333333
-	dw `33333333
-	dw `33333333
-	dw `33333333
-	dw `33333333
-	dw `33333333
-	dw `33333333
-	dw `33333333
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
 
 	dw `00000000
 	dw `00000000
@@ -687,172 +738,172 @@ Tiles:
 	
 	; row 0
 	; tile 0
-	dw `11111111
-	dw `11111111
-	dw `11111111
-	dw `11111111
-	dw `11111113
-	dw `11111133
-	dw `11111333
-	dw `11113333
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
 
 	; tile 1
-	dw `11111111
-	dw `11111111
-	dw `11111111
-	dw `13111111
-	dw `33111111
-	dw `03311111
-	dw `00331111
-	dw `00331111
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
 
 
 	; tile 2
-	dw `11111111
-	dw `11111111
-	dw `11111111
-	dw `11111111
-	dw `11111111
-	dw `11111111
-	dw `11111111
-	dw `11111111
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
 	
 	; tile 3
-	dw `11111111
-	dw `11111111
-	dw `11111111
-	dw `11111111
-	dw `11111111
-	dw `11111111
-	dw `11111111
-	dw `11111111
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
 
 
 	; row 1
 
 	; tile 0
-	dw `11111333
-	dw `11111333
-	dw `11111330
-	dw `11113300
-	dw `11133300
-	dw `11133300
-	dw `11133000
-	dw `11133003
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
 
 	; tile 1
-	dw `00033111
-	dw `00003311
-	dw `00000331
-	dw `00000033
-	dw `00030000
-	dw `00300000
-	dw `03000000
-	dw `30000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
 
 	; tile 2
-	dw `11111111
-	dw `11111111
-	dw `11111111
-	dw `11111111
-	dw `33111111
-	dw `03311111
-	dw `00331111
-	dw `00033111
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
 	
 	; tile 3
-	dw `11111111
-	dw `11111111
-	dw `11111111
-	dw `11111111
-	dw `11111111
-	dw `11111111
-	dw `11111111
-	dw `11111111
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
 
 	; row 2
 
 	; tile 0
-	dw `11133003
-	dw `11133030
-	dw `11133030
-	dw `11330030
-	dw `11330030
-	dw `11330030
-	dw `11330300
-	dw `13300302
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
 
 	; tile 1
 	dw `00000000
 	dw `00000000
-	dw `00011100
-	dw `00111111
-	dw `01111111
 	dw `00000000
 	dw `00000000
-	dw `22222222
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
 
 	; tile 2
-	dw `00033111
-	dw `00003311
-	dw `00000331
-	dw `11000033
-	dw `11100000
 	dw `00000000
-	dw `22222000
-	dw `22222200
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
 	
 	; tile 3
-	dw `11111111
-	dw `11111111
-	dw `33111111
-	dw `33111111
-	dw `03311111
-	dw `00331111
-	dw `00033111
-	dw `00003311
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
 
 	; row 3
 
 	; tile 0
-	dw `33300302
-	dw `33003002
-	dw `33003022
-	dw `33030000
-	dw `00030000
-	dw `00030000
-	dw `00300011
-	dw `00300011
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
 
 	; tile 1
-	dw `22222222
-	dw `22222222
-	dw `22222222
 	dw `00000000
 	dw `00000000
 	dw `00000000
-	dw `11111111
-	dw `11111111
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
 
 	; tile 2
-	dw `22222200
-	dw `22222220
-	dw `22222222
 	dw `00000000
 	dw `00000000
 	dw `00000000
-	dw `11111111
-	dw `11111111
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
 	
 	; tile 3
-	dw `00003311
-	dw `00000331
-	dw `20000331
-	dw `22000331
-	dw `00000033
 	dw `00000000
-	dw `11111100
-	dw `11111110
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
+	dw `00000000
 	
 
 TilesEnd:
@@ -894,3 +945,4 @@ MoveRight: db
 RandomNumber: db
 MovementPeriod: db
 Reverse: db
+MoveAlternate: db
