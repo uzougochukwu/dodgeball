@@ -436,7 +436,7 @@ CheckHitX:
 	cp a, b 
 	jp c, CheckHitXNegativeResult  ; if carry flag is set, it means a < b
 	sub a, b 			; so we know a > b 
-	cp a, 5				; if carry flag is set, a < 5, so x coord close enough for collision
+	cp a, 8				; if carry flag is set, a < 5, so x coord close enough for collision
 	jp nc, ActualCanMove
 	jp CheckHitY		; x coord are close enough, so now check y
 
@@ -447,7 +447,7 @@ CheckHitXNegativeResult:
 	ld b, a 			; x coord of opponent in b 
 	ld a, [_OAMRAM + 5] ; x coord of ball in a 
 	sub a, b 
-	cp a, 5				; if carry flag is set, a < 5 so x coord is close enough for collision
+	cp a, 8				; if carry flag is set, a < 5 so x coord is close enough for collision
 	jp nc, ActualCanMove
 
 
@@ -459,7 +459,7 @@ CheckHitY:
 	cp a, b 
 	jp c, CheckHitYNegativeResult	; if carry flag is set, then a < b 
 	sub a, b 					; we know a > b 
-	cp a, 3
+	cp a, 5
 	jp nc, ActualCanMove	; if carry flag not set then y coords not close enough
 
 
@@ -470,7 +470,7 @@ CheckHitYNegativeResult:
 	ld b, a 			; y coord of opponent in b 
 	ld a, [_OAMRAM+4]	; y coord of ball in a 
 	sub a, b 
-	cp a, 3				; if carry flag set then a < 3 so coords are close enough for collision
+	cp a, 5				; if carry flag set then a < 3 so coords are close enough for collision
 	jp nc, ActualCanMove
 
 ; set PlayerBallThrown flag to 0	
