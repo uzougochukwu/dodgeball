@@ -58,11 +58,7 @@ WaitForvBlank:
 	ld a, [_OAMRAM]
 	ld [RandomNumber], a
 
-	; clearing object attribute memory (OAM)
 
-	ld a, 0			; we want to put 0 in every location in OAM
-	ld b, 160		; OAM is 160 bytes, so we use b as the index
-	ld hl, _OAMRAM		; load the start address of OAM into hl
 
 
 	; copy the player tiles
@@ -82,6 +78,12 @@ WaitForvBlank:
 	ld hl, $8020
 	ld bc, OpponentEnd - Opponent
 	call Memcpy
+
+	; clearing object attribute memory (OAM)
+
+	ld a, 0			; we want to put 0 in every location in OAM
+	ld b, 160		; OAM is 160 bytes, so we use b as the index
+	ld hl, _OAMRAM		; load the start address of OAM into hl
 
 
 ClearOam:
