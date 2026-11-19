@@ -26,7 +26,7 @@ EntryPoint:
 	ld a, 1
 	ld [MoveRight], a
 	ld [MoveAlternate], a
-	ld a, 5
+	ld a, 30
 	ld [MovementPeriod], a
 
 WaitForvBlank:
@@ -318,8 +318,8 @@ ActualCheckCatch:
 	jp z, CheckThrow
 	ld a, 1
 	ld [BallCaught], a	; set BallCaught flag to 1
-	ld a, 0
-	ld [PlayerBallThrown], a ; set PlayerBallThrown flag to 0
+	;ld a, 0
+	;ld [PlayerBallThrown], a ; set PlayerBallThrown flag to 0
 	ld a, 0
 	ld a, $16
 	ld [$FF10], a		; set sweep time to 1 (sweep time allows freq. to gradually increase or decrease), but 1 means it stays samee
@@ -490,7 +490,7 @@ FirstReverse:
 
 FirstMovementPeriod:
 	ld a, [MovementPeriod]
-	cp a, 5
+	cp a, 30
 	jp nz, IncreaseMovementPeriod
 	ld a, 0					; if zero flag, then MovementPeriod is 30, so we can now do our original routine and set Reverse flag back to 0
 	ld [Reverse], a
@@ -557,7 +557,7 @@ SecondReverse:
 FinalMovementPeriod:
 ; check whether we can increase the MovementPeriod 
 	ld a, [MovementPeriod]
-	cp a, 5
+	cp a, 30
 	jp nz, SecondIncreaseMovementPeriod
 	ld a, 0   ; if zero flag is set, then MovementPeriod is 30 and we can now do our original SecondOpponentRoutine and set Reverse flag to 0
 	ld [Reverse], a
