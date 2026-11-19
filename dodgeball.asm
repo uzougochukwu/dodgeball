@@ -6,6 +6,10 @@ SECTION "Header", ROM0[$100]
 	jp EntryPoint	; jump to EntryPoint
 
 	ds $150 - @, 0		; Create space for the header
+	
+
+EntryPoint:
+
 
 	; initialise globals
 	ld a, 0
@@ -24,10 +28,6 @@ SECTION "Header", ROM0[$100]
 	ld [MoveAlternate], a
 	ld a, 5
 	ld [MovementPeriod], a
-	
-	
-
-EntryPoint:
 
 WaitForvBlank:
 	; wait until vBlank
@@ -631,9 +631,9 @@ Ball:
 BallEnd:
 
 Opponent:
-    dw `03000030
+    dw `03022030
     dw `10011001
-    dw `10030001
+    dw `12032201
     dw `00000000
     dw `00000000
     dw `00000000
