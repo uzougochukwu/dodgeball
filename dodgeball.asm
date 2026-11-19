@@ -226,7 +226,7 @@ Right:
 	inc a			; moving to right is increase in x coord
 
 	; check we have't reached right wall
-	cp a, 113
+	cp a, 162
 	jp z, Main
 	ld [_OAMRAM + 1], a
 	jp Main
@@ -410,20 +410,80 @@ MoveBallFromPlayer:
 	jp c, HitWall
 
 	; now check to see if it has hit the opponent, if it has jp to HitOpponent
-	ld a, [_OAMRAM+8]	; y coord of opponent in a
-	ld b, a			; y coord of opponent in b
-	ld a, [_OAMRAM+4]	; y coord of ball in a
+	;ld a, [_OAMRAM+8]	; y coord of opponent in a
+	;ld b, a			; y coord of opponent in b
+	;ld a, [_OAMRAM+4]	; y coord of ball in a
 	; for ease of programming, test that they are equal only
-	cp a, b
-	jp nz, CanMove		; if the y coords of ball and opponent are not equal, go to CanMove
+	;cp a, b
+	;jp nz, CanMove		; if the y coords of ball and opponent are not equal, go to CanMove
 
-	ld a, [_OAMRAM+9]	; x coord of opponent in a
-	ld b, a			; x coord of opponent in b
-	ld a, [_OAMRAM+5]	; x coord of ball in a
-	cp a, b
+	;ld a, [_OAMRAM+9]	; x coord of opponent in a
+	;ld b, a			; x coord of opponent in b
+	;ld a, [_OAMRAM+5]	; x coord of ball in a
+	;cp a, b
 
 
 CanMove:	
+
+; CanMove checks whether the ball has hit the opponent, using both x and y coords, if the ball has hit the opponent _
+; PlayerBallThrown is set to 0 and we return
+
+CheckHitX:
+	ld a, [_OAMRAM+5]	; x coord of ball in a 
+	ld b, a 			; x coord of ball in b 
+	ld a, [_OAMRAM+9]	; x coord of opponent in a 
+	; check whether a or b is greater 
+	cp a, b 
+	jp c, CheckHitXNegativeResult  ; if carry flag is set, it means a < b
+	sub a, b 			; so we know a > b 
+	cp a, 5				; if carry flag is set, a < 5, so x coord close enough for collision
+	jp nc, ActualCanMove
+	jp CheckHitY		; x coord are close enough, so now check y
+
+CheckHitXNegativeResult:
+; so x-opponent < x-ball 
+; so load x coord of ball in a and x coord of opponent in b 
+	ld a, [_OAMRAM+9]	; x coord of opponent in a 
+	ld b, a 			; x coord of opponent in b 
+	ld a, [_OAMRAM + 5] ; x coord of ball in a 
+	sub a, b 
+	cp a, 5				; if carry flag is set, a < 5 so x coord is close enough for collision
+	jp nc, ActualCanMove
+
+
+CheckHitY:
+	ld a, [_OAMRAM+4]	; y coord of ball in a 
+	ld b, a 			; y coord of ball in b 
+	ld a, [_OAMRAM+8]	; y coord of opponent in a 
+	; check whether a or b is greater 
+	cp a, b 
+	jp c, CheckHitYNegativeResult	; if carry flag is set, then a < b 
+	sub a, b 					; we know a > b 
+	cp a, 3
+	jp nc, ActualCanMove	; if carry flag not set then y coords not close enough
+
+
+CheckHitYNegativeResult:
+; y-opponent < y-ball
+; so load the y coord of opponent in b and y coord of ball in a 
+	ld a, [_OAMRAM+8]	; y coord of opponent in a 
+	ld b, a 			; y coord of opponent in b 
+	ld a, [_OAMRAM+4]	; y coord of ball in a 
+	sub a, b 
+	cp a, 3				; if carry flag set then a < 3 so coords are close enough for collision
+	jp nc, ActualCanMove
+
+; set PlayerBallThrown flag to 0	
+	ld a, 0
+	ld [PlayerBallThrown], a 
+
+; play sound indicating a collision
+
+	
+	ret 
+
+ActualCanMove:
+
 	ld a, [_OAMRAM + 4]
 	dec a
 	;sub a, 2
