@@ -478,7 +478,16 @@ CheckHitYNegativeResult:
 	ld [PlayerBallThrown], a 
 
 ; play sound indicating a collision
-
+	ld a, $16
+	ld [$FF10], a		; set sweep time to 1 (sweep time allows freq. to gradually increase or decrease), but 1 means it stays samee
+	ld a, $90
+	ld [$FF11], a		; set length of sound
+	ld a, $73
+	ld [$FF12], a		; volume and how volume changes
+	ld a, $FF
+	ld [$FF13], a		; set frequency
+	ld a, $C3
+	ld [$FF14], a		; playback length for sound (not sure how this differs from usual length)
 	
 	ret 
 
